@@ -6,8 +6,8 @@ edition = "2021"
 [dependencies]
 
 [dependencies.songbird]
+version = "0.2"
 features = ["builtin-queue"]
-path = "../../../"
 
 [dependencies.serenity]
 version = "0.10"
