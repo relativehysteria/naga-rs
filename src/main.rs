@@ -27,7 +27,7 @@ impl SlashHandler {
 }
 
 #[async_trait]
-impl EventHandler for Handler {
+impl EventHandler for SlashHandler {
     /// Handle slash commands
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(interaction) = interaction {
