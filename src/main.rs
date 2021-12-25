@@ -12,7 +12,9 @@ use serenity::{
 use naga_rs::commands::*;
 
 
+/// Handler for slash commands
 struct SlashHandler {
+    /// Commands registered into this handler
     commands: Vec<Box<dyn ApplicationCommandImplementation + Sync + Send>>,
 }
 
