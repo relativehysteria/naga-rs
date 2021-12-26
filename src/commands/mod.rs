@@ -6,16 +6,18 @@ use serenity::{
     model::prelude::application_command::ApplicationCommandInteraction,
 };
 
-pub mod ping;
-pub mod join;
+mod ping;
+mod join;
+pub use ping::Ping;
+pub use join::Join;
 
 /// Returns a `Vec` of _all_ the `ApplicationCommandImplementation`s this bot
 /// has.
 /// _New commands have to be registered here._
 pub fn get_bot_commands() -> Vec<Box<dyn ApplicationCommandImplementation + Sync + Send>> {
     vec![
-        Box::new(ping::Ping),
-        Box::new(join::Join),
+        Box::new(Ping),
+        Box::new(Join),
     ]
 }
 
