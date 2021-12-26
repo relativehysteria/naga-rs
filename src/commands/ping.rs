@@ -7,6 +7,9 @@ use serenity::{
     model::prelude::application_command::ApplicationCommandInteraction,
 };
 
+/// A very simple ping command.
+/// The source code of this command can be used as a template for other
+/// commands.
 pub struct Ping;
 
 #[async_trait]
