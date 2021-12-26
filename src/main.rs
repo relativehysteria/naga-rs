@@ -9,6 +9,8 @@ use serenity::{
     },
 };
 
+use songbird::SerenityInit;
+
 use naga_rs::commands::*;
 
 
@@ -82,6 +84,7 @@ async fn main() {
     let mut client = Client::builder(&token)
         .application_id(app_id)
         .event_handler(SlashHandler::new())
+        .register_songbird()
         .await
         .expect("Error while building the client.");
 

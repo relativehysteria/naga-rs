@@ -4,9 +4,7 @@ use serenity::{
     prelude::SerenityError,
     async_trait,
     client::Context,
-    model::{
-        prelude::application_command::ApplicationCommandInteraction,
-    },
+    model::prelude::application_command::ApplicationCommandInteraction,
 };
 
 pub struct Ping;

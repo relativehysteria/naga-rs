@@ -7,14 +7,15 @@ use serenity::{
 };
 
 pub mod ping;
-use ping::Ping as Ping;
+pub mod join;
 
 /// Returns a `Vec` of _all_ the `ApplicationCommandImplementation`s this bot
 /// has.
 /// _New commands have to be registered here._
 pub fn get_bot_commands() -> Vec<Box<dyn ApplicationCommandImplementation + Sync + Send>> {
     vec![
-        Box::new(Ping),
+        Box::new(ping::Ping),
+        Box::new(join::Join),
     ]
 }
 
