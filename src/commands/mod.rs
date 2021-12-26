@@ -71,3 +71,17 @@ pub trait ApplicationCommandImplementation {
         ctx: &Context, cmd: &ApplicationCommandInteraction
     ) -> Result<(), SerenityError>;
 }
+
+
+/// Creates and sends a simple text interaction response.
+async fn response(
+    command: &ApplicationCommandInteraction,
+    http: &serenity::http::Http,
+    message: &str,
+) -> Result<(), SerenityError>  {
+    command.create_interaction_response(http, |response| {
+        response.interaction_response_data(|msg| {
+            msg.content(message)
+        })
+    }).await
+}

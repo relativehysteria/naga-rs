@@ -1,4 +1,4 @@
-use crate::commands::ApplicationCommandImplementation;
+use crate::commands::*;
 use serenity::{
     prelude::SerenityError,
     async_trait,
@@ -69,16 +69,4 @@ impl ApplicationCommandImplementation for Join {
             response(command, &ctx.http, "I'm in B)").await
         }
     }
-}
-
-async fn response(
-    command: &ApplicationCommandInteraction,
-    http: &serenity::http::Http,
-    message: &str,
-) -> Result<(), SerenityError>  {
-    command.create_interaction_response(http, |response| {
-        response.interaction_response_data(|msg| {
-            msg.content(message)
-        })
-    }).await
 }
