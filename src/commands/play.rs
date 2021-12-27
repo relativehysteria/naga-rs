@@ -84,20 +84,26 @@ impl ApplicationCommandImplementation for Play {
         // First, get the handler
         let mut handler = handler_lock.lock().await;
 
-        // Check that we have a valid URL
-        // TODO: Change this to work with `ytdl_search`
-        if !term.starts_with("http") {
-            return response(command, &ctx.http, "Provide a valid URL.").await;
-        }
-
         // Get the audio source
-        let source = match Restartable::ytdl(term, true).await {
-            Ok(source) => source,
-            Err(e)     => {
-                eprintln!("Error while queueing a song: {:?}", e);
-                return response(command, &ctx.http,
-                                "Couldn't fetch audio stream source.")
-                    .await;
+        let source = if term.starts_with("http") {
+            match Restartable::ytdl(term, true).await {
+                Ok(source) => source,
+                Err(e)     => {
+                    eprintln!("Error while queueing a song: {:?}", e);
+                    return response(command, &ctx.http,
+                                    "Couldn't fetch audio stream source.")
+                        .await;
+                }
+            }
+        } else {
+            match Restartable::ytdl_search(term, true).await {
+                Ok(source) => source,
+                Err(e)     => {
+                    eprintln!("Error while queueing a song: {:?}", e);
+                    return response(command, &ctx.http,
+                                    "Couldn't fetch audio stream source.")
+                        .await;
+                }
             }
         };
 
