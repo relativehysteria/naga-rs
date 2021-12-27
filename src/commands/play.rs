@@ -86,24 +86,17 @@ impl ApplicationCommandImplementation for Play {
 
         // Get the audio source
         let source = if term.starts_with("http") {
-            match Restartable::ytdl(term, true).await {
-                Ok(source) => source,
-                Err(e)     => {
-                    eprintln!("Error while queueing a song: {:?}", e);
-                    return response(command, &ctx.http,
-                                    "Couldn't fetch audio stream source.")
-                        .await;
-                }
-            }
+            Restartable::ytdl(term, true).await
         } else {
-            match Restartable::ytdl_search(term, true).await {
-                Ok(source) => source,
-                Err(e)     => {
-                    eprintln!("Error while queueing a song: {:?}", e);
-                    return response(command, &ctx.http,
-                                    "Couldn't fetch audio stream source.")
-                        .await;
-                }
+            Restartable::ytdl_search(term, true).await
+        };
+        let source = match source {
+            Ok(source) => source,
+            Err(e)     => {
+                eprintln!("Error while queueing a song: {:?}", e);
+                return response(command, &ctx.http,
+                                "Couldn't fetch audio stream source.")
+                    .await;
             }
         };
 
