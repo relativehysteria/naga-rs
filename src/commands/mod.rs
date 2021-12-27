@@ -6,7 +6,7 @@
 //! _(though it can be called anything..)_
 //! 3. Implement the `ApplicationCommandImplementation` trait for the struct.
 //! 4. Export the file in `mod.rs` (`mod ping`).
-//! 5. Publically re-export the command struct in `mod.rs` (`pub use ping::Ping;`).
+//! 5. Publicly re-export the command struct in `mod.rs` (`pub use ping::Ping;`).
 //! 6. Add the struct to the vector returned by `get_bot_commands()`.
 use serenity::{
     prelude::SerenityError,
