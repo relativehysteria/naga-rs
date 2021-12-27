@@ -1,6 +1,9 @@
 use crate::commands::*;
 use serenity::{
-    builder::CreateApplicationCommand,
+    builder::{
+        CreateApplicationCommand,
+        CreateEmbed,
+    },
     prelude::SerenityError,
     async_trait,
     client::Context,
@@ -102,6 +105,52 @@ impl ApplicationCommandImplementation for Play {
         // Enqueue the source
         handler.enqueue_source(source.into());
 
-        response(command, &ctx.http, "Song added to the queue.").await
+        // Try and create an embed for the queued up song.
+        // First, get the metadata of the song
+        let queue    = handler.queue().current_queue();
+        let song     = queue.last().unwrap();
+        let metadata = song.metadata().clone();
+
+        // Then get the fields that we care about
+        let source    = metadata.source_url.unwrap();
+        let channel   = metadata.channel;
+        let duration  = metadata.duration;
+        let thumbnail = metadata.thumbnail;
+        let title     = metadata.title
+            .and_then(|title| Some(format!("[{}]({})", title, source)));
+
+        // Don't create an embed if there is no title
+        if title.is_none() {
+            return response(command, &ctx.http, "Song added to the queue.")
+                .await;
+        }
+
+        // Create the final embed
+        let mut embed = &mut CreateEmbed(std::collections::HashMap::new());
+        embed = embed
+            .title("Enqueued")
+            .description(title.unwrap());
+
+        // Add the duration
+        if duration.is_some() {
+            embed = embed.field("Duration (in seconds)",
+                                parse_duration(duration.unwrap()), true);
+        }
+
+        // Add the channel name
+        if channel.is_some() {
+            embed = embed.field("Uploader", channel.unwrap(), true);
+        }
+
+        // Add the thumbnail
+        if thumbnail.is_some() {
+            embed = embed.thumbnail(thumbnail.unwrap());
+        }
+
+        command.create_interaction_response(&ctx.http, |response| {
+            response.interaction_response_data(|msg| {
+                msg.add_embed(embed.clone())
+            })
+        }).await
     }
 }

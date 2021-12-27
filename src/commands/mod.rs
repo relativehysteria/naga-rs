@@ -106,3 +106,22 @@ async fn get_songbird(ctx: &Context) -> Arc<Songbird> {
     .expect("Songbird Voice client placed in at initialisation.")
     .clone()
 }
+
+/// Parses a duration into a readable string.
+fn parse_duration(duration: std::time::Duration) -> String {
+    let mut seconds = duration.as_secs();
+    let days        = seconds / (24 * 3600);
+    seconds        %= 24 * 3600;
+    let hours       = seconds / 3600;
+    seconds        %= 3600;
+    let minutes     = seconds / 60;
+    seconds        %= 60;
+
+    let mut result = "".to_string();
+    if days    != 0 { result.push_str(&format!("{:02}:", days))    }
+    if hours   != 0 { result.push_str(&format!("{:02}:", hours))   }
+    if minutes != 0 { result.push_str(&format!("{:02}:", minutes)) }
+    result.push_str(&format!("{:02}", seconds));
+
+    result
+}
