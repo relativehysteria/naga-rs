@@ -132,7 +132,7 @@ impl ApplicationCommandImplementation for Play {
 
         // Add the duration
         if duration.is_some() {
-            embed = embed.field("Duration (in seconds)",
+            embed = embed.field("Duration",
                                 parse_duration(duration.unwrap()), true);
         }
 
