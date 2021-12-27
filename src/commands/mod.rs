@@ -19,9 +19,11 @@ use serenity::{
 mod ping;
 mod join;
 mod leave;
+mod play;
 pub use ping::Ping;
 pub use join::Join;
 pub use leave::Leave;
+pub use play::Play;
 
 /// Returns a `Vec` of _all_ the `ApplicationCommandImplementation`s this bot
 /// has.
@@ -31,6 +33,7 @@ pub fn get_bot_commands() -> Vec<Box<dyn ApplicationCommandImplementation + Sync
         Box::new(Ping),
         Box::new(Join),
         Box::new(Leave),
+        Box::new(Play),
     ]
 }
 
