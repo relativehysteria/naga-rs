@@ -120,8 +120,7 @@ fn parse_duration(duration: std::time::Duration) -> String {
     let mut result = "".to_string();
     if days    != 0 { result.push_str(&format!("{:02}:", days))    }
     if hours   != 0 { result.push_str(&format!("{:02}:", hours))   }
-    if minutes != 0 { result.push_str(&format!("{:02}:", minutes)) }
-    result.push_str(&format!("{:02}", seconds));
+    result.push_str(&format!("{:02}:{:02}", minutes, seconds));
 
     result
 }
