@@ -51,6 +51,9 @@ impl ApplicationCommandImplementation for Play {
     ) -> Result<(), SerenityError> {
         let err_msg = "Must provide a URL or a search term.";
 
+        // Get the songbird manager
+        let manager = get_songbird(ctx).await;
+
         // Get the search term
         let term = command.data.options.get(0);
         if term.is_none() {
@@ -73,12 +76,6 @@ impl ApplicationCommandImplementation for Play {
                 .await;
         }
         let guild_id = guild_id.unwrap();
-
-        // Get the songbird manager
-        let manager = songbird::get(ctx)
-            .await
-            .expect("Songbird VC placed in at initialization")
-            .clone();
 
         // Get the VC lock
         let handler_lock = manager.get(guild_id);

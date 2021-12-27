@@ -24,6 +24,9 @@ impl ApplicationCommandImplementation for Leave {
         ctx: &Context,
         command: &ApplicationCommandInteraction
     ) -> Result<(), SerenityError> {
+        // Get the manager
+        let manager = get_songbird(ctx).await;
+
         // Get the guild id
         let guild_id = command.guild_id;
         if guild_id.is_none() {
@@ -31,12 +34,6 @@ impl ApplicationCommandImplementation for Leave {
                 .await;
         }
         let guild_id = guild_id.unwrap();
-
-        // Get the manager
-        let manager = songbird::get(ctx)
-            .await
-            .expect("Songbird VC placed in at initialization.")
-            .clone();
 
         // Check that we are in a voice channel
         if manager.get(guild_id).is_none() {

@@ -8,6 +8,8 @@
 //! 4. Export the file in `mod.rs` (`mod ping`).
 //! 5. Publicly re-export the command struct in `mod.rs` (`pub use ping::Ping;`).
 //! 6. Add the struct to the vector returned by `get_bot_commands()`.
+use std::sync::Arc;
+
 use serenity::{
     prelude::SerenityError,
     async_trait,
@@ -15,6 +17,8 @@ use serenity::{
     builder::CreateApplicationCommand,
     model::prelude::application_command::ApplicationCommandInteraction,
 };
+
+use songbird::Songbird;
 
 mod ping;
 mod join;
@@ -93,4 +97,12 @@ async fn response(
             msg.content(message)
         })
     }).await
+}
+
+/// Returns the songbird manager
+async fn get_songbird(ctx: &Context) -> Arc<Songbird> {
+    songbird::get(ctx)
+    .await
+    .expect("Songbird Voice client placed in at initialisation.")
+    .clone()
 }

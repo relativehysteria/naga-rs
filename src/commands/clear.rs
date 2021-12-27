@@ -25,6 +25,9 @@ impl ApplicationCommandImplementation for Clear {
         ctx: &Context,
         command: &ApplicationCommandInteraction
     ) -> Result<(), SerenityError> {
+        // Get the songbird manager
+        let manager = get_songbird(ctx).await;
+
         // Get the guild_id
         let guild_id = command.guild_id;
         if guild_id.is_none() {
@@ -32,12 +35,6 @@ impl ApplicationCommandImplementation for Clear {
                 .await;
         }
         let guild_id = guild_id.unwrap();
-
-        // Get the songbird manager
-        let manager = songbird::get(ctx)
-            .await
-            .expect("Songbird VC placed in at initialization")
-            .clone();
 
         // Clear the queue
         if let Some(lock) = manager.get(guild_id) {

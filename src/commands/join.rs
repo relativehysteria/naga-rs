@@ -26,6 +26,9 @@ impl ApplicationCommandImplementation for Join {
         ctx: &Context,
         command: &ApplicationCommandInteraction
     ) -> Result<(), SerenityError> {
+        // Get the songbird manager
+        let manager = get_songbird(ctx).await;
+
         // Get the guild id
         let guild_id = command.guild_id;
         if guild_id.is_none() {
@@ -51,12 +54,6 @@ impl ApplicationCommandImplementation for Join {
             return response(command, &ctx.http, &err).await;
         }
         let voice_channel_id = voice_channel_id.unwrap();
-
-        // Get the songbird manager
-        let manager = songbird::get(ctx)
-            .await
-            .expect("Songbird VC placed in at initialization.")
-            .clone();
 
         // Join the VC
         let (lock, status) = manager.join(guild_id, voice_channel_id).await;
