@@ -6,7 +6,7 @@ use serenity::{
     model::prelude::application_command::ApplicationCommandInteraction,
 };
 
-/// The "leave" command. Leaves a voice channel if the bot is in it.
+/// Leaves a voice channel if the bot is in it.
 pub struct Leave;
 
 #[async_trait]

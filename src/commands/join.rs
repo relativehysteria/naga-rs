@@ -8,7 +8,7 @@ use serenity::{
     }
 };
 
-/// The "join" command. Joins the bot into a voice channel.
+/// Joins the bot into a voice channel.
 pub struct Join;
 
 #[async_trait]

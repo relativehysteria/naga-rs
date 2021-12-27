@@ -16,7 +16,6 @@ use serenity::{
 
 use songbird::input::Restartable;
 
-/// The "play" command.
 /// Plays something in the voice chat that the bot is connected to.
 pub struct Play;
 

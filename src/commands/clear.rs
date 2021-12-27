@@ -6,7 +6,6 @@ use serenity::{
     model::prelude::application_command::ApplicationCommandInteraction,
 };
 
-/// The "clear" command.
 /// Clears the currently played queue.
 pub struct Clear;
 
