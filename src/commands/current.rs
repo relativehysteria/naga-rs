@@ -1,6 +1,5 @@
 use crate::commands::*;
 use serenity::{
-    builder::CreateEmbed,
     prelude::SerenityError,
     async_trait,
     client::Context,
@@ -49,46 +48,14 @@ impl ApplicationCommandImplementation for Current {
             None          => return response(command, &ctx.http,
                                              "No song is playing").await,
         };
-        let metadata = current.metadata().clone();
-
-        // Get the fields that we care about
-        let source    = metadata.source_url.unwrap();
-        let channel   = metadata.channel;
-        let duration  = metadata.duration;
-        let thumbnail = metadata.thumbnail;
-        let title     = metadata.title
-            .and_then(|title| Some(format!("[{}]({})", title, source)));
-
-        // Don't create an embed if there is no title
-        if title.is_none() {
-            return response(command, &ctx.http, "The song has no title").await;
-        }
 
         // Create the embed
-        let mut embed = &mut CreateEmbed(std::collections::HashMap::new());
-        embed = embed
-            .title("Currently playing song")
-            .description(title.unwrap());
-
-        // Add the duration
-        if duration.is_some() {
-            embed = embed.field("Duration",
-                                parse_duration(duration.unwrap()), true);
-        }
-
-        // Add the channel name
-        if channel.is_some() {
-            embed = embed.field("Uploader", channel.unwrap(), true);
-        }
-
-        // Add the thumbnail
-        if thumbnail.is_some() {
-            embed = embed.thumbnail(thumbnail.unwrap());
-        }
+        let embed = create_embed_for_track(&current, "Currently playing song")
+            .unwrap();
 
         command.create_interaction_response(&ctx.http, |response| {
             response.interaction_response_data(|msg| {
-                msg.add_embed(embed.clone())
+                msg.add_embed(embed)
             })
         }).await
     }

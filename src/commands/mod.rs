@@ -14,11 +14,17 @@ use serenity::{
     prelude::SerenityError,
     async_trait,
     client::Context,
-    builder::CreateApplicationCommand,
+    builder::{
+        CreateEmbed,
+        CreateApplicationCommand
+    },
     model::prelude::application_command::ApplicationCommandInteraction,
 };
 
-use songbird::Songbird;
+use songbird::{
+    tracks::TrackHandle,
+    Songbird,
+};
 
 mod ping;
 mod join;
@@ -132,4 +138,44 @@ fn parse_duration(duration: std::time::Duration) -> String {
     result.push_str(&format!("{:02}:{:02}", minutes, seconds));
 
     result
+}
+
+/// Creates an embed for the given `TrackHandle`
+///
+/// `title` is the title for the embed.
+fn create_embed_for_track(
+    track: &TrackHandle,
+    embed_title: &str
+) -> Option<CreateEmbed> {
+    let metadata = track.metadata().clone();
+
+    let source    = metadata.source_url?;
+    let channel   = metadata.channel;
+    let duration  = metadata.duration;
+    let thumbnail = metadata.thumbnail;
+    let title     = metadata.title
+        .and_then(|title| Some(format!("[{}]({})", title, source)))?;
+
+    // Create the embed
+    let mut embed = &mut CreateEmbed(std::collections::HashMap::new());
+    embed = embed
+        .title(embed_title)
+        .description(title);
+
+    // Add the duration
+    if let Some(duration) = duration {
+        embed = embed.field("Duration", parse_duration(duration), true);
+    }
+
+    // Add the channel name
+    if let Some(channel) = channel {
+        embed = embed.field("Uploader", channel, true);
+    }
+
+    // Add the thumbnail
+    if let Some(thumbnail) = thumbnail {
+        embed = embed.thumbnail(thumbnail);
+    }
+
+    Some(embed.clone())
 }
