@@ -27,6 +27,7 @@ mod play;
 mod clear;
 mod skip;
 mod pause;
+mod current;
 pub use ping::Ping;
 pub use join::Join;
 pub use leave::Leave;
@@ -34,6 +35,7 @@ pub use play::Play;
 pub use clear::Clear;
 pub use skip::Skip;
 pub use pause::Pause;
+pub use current::Current;
 
 /// Returns a `Vec` of _all_ the `ApplicationCommandImplementation`s this bot
 /// has.
@@ -47,6 +49,7 @@ pub fn get_bot_commands() -> Vec<Box<dyn ApplicationCommandImplementation + Sync
         Box::new(Clear),
         Box::new(Skip),
         Box::new(Pause),
+        Box::new(Current),
     ]
 }
 
