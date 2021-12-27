@@ -28,12 +28,11 @@ impl ApplicationCommandImplementation for Leave {
         let manager = get_songbird(ctx).await;
 
         // Get the guild id
-        let guild_id = command.guild_id;
-        if guild_id.is_none() {
-            return response(command, &ctx.http, "Command not used from a guild")
-                .await;
-        }
-        let guild_id = guild_id.unwrap();
+        let guild_id = match command.guild_id {
+            Some(id) => id,
+            None     => return response(command, &ctx.http,
+                                 "Command not used from a guild").await,
+        };
 
         // Check that we are in a voice channel
         if manager.get(guild_id).is_none() {

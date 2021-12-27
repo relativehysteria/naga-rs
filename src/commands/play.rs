@@ -55,36 +55,30 @@ impl ApplicationCommandImplementation for Play {
         let manager = get_songbird(ctx).await;
 
         // Get the search term
-        let term = command.data.options.get(0);
-        if term.is_none() {
-            return response(command, &ctx.http, err_msg).await;
-        }
-        let term = term.unwrap().resolved.as_ref();
-        if term.is_none() {
-            return response(command, &ctx.http, err_msg).await;
-        }
-        let term = if let ACIDOV::String(term) = term.unwrap() {
+        let term = command.data.options.get(0)
+            .and_then(|term| term.resolved.as_ref());
+        let term = if let Some(ACIDOV::String(term)) = term {
             term.clone()
         } else {
             return response(command, &ctx.http, err_msg).await;
         };
 
         // Get the guild_id
-        let guild_id = command.guild_id;
-        if guild_id.is_none() {
-            return response(command, &ctx.http, "Command not used from a guild")
-                .await;
-        }
-        let guild_id = guild_id.unwrap();
+        let guild_id = match command.guild_id {
+            Some(id) => id,
+            None     => return response(command, &ctx.http,
+                                        "Command not used from a guild").await,
+        };
 
         // Get the VC lock
-        let handler_lock = manager.get(guild_id);
-        if handler_lock.is_none() {
-            return response(command, &ctx.http, "Not in a voice channel").await;
-        }
-        let handler_lock = handler_lock.unwrap();
+        let handler_lock = match manager.get(guild_id) {
+            Some(lock) => lock,
+            None       => return response(command, &ctx.http,
+                                         "Not in a voice channel").await,
+        };
 
         // Attempt to insert the song into the queue
+
         // First, get the handler
         let mut handler = handler_lock.lock().await;
 
