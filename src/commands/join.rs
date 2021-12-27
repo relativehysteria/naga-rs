@@ -52,6 +52,12 @@ impl ApplicationCommandImplementation for Join {
                                            "Not in a voice channel").await,
         };
 
+        // Bots shouldn't reconnect between channels
+        if manager.get(guild_id).is_some() {
+            return response(command, &ctx.http,
+                            "Already connected to a voice channel").await;
+        }
+
         // Join the VC
         let (_, status) = manager.join(guild_id, voice_channel_id).await;
         if let Err(e) = status {
