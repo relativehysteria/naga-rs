@@ -44,8 +44,7 @@ impl ApplicationCommandImplementation for Pause {
         };
 
         // Get the currently playing song
-        let handler = handler_lock.lock().await;
-        let cur = match handler.queue().current() {
+        let cur = match handler_lock.lock().await.queue().current() {
             Some(song) => song,
             None       => return response(command, &ctx.http,
                                           "No song is currently playing").await,

@@ -42,8 +42,7 @@ impl ApplicationCommandImplementation for Current {
         };
 
         // Get the metadata about the currently playing song
-        let handler  = handler_lock.lock().await;
-        let current  = match handler.queue().current() {
+        let current  = match handler_lock.lock().await.queue().current() {
             Some(current) => current,
             None          => return response(command, &ctx.http,
                                              "No song is playing").await,
