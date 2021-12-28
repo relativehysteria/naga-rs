@@ -31,10 +31,7 @@ impl ApplicationCommandImplementation for Clear {
         if let Some(guild_id) = command.guild_id {
             // Clear the queue
             if let Some(lock) = manager.get(guild_id) {
-                let handler = lock.lock().await;
-                let queue   = handler.queue();
-                queue.stop();
-
+                lock.lock().await.queue().stop();
                 response(command, &ctx.http, "Queue cleared").await
             } else {
                 response(command, &ctx.http, "Not in a voice channel").await
