@@ -78,9 +78,6 @@ impl ApplicationCommandImplementation for Play {
 
         // Attempt to insert the song into the queue
 
-        // First, get the handler
-        let mut handler = handler_lock.lock().await;
-
         // Get the audio source
         let source = if term.starts_with("http") {
             Restartable::ytdl(term, true).await
@@ -98,6 +95,7 @@ impl ApplicationCommandImplementation for Play {
         };
 
         // Enqueue the source
+        let mut handler = handler_lock.lock().await;
         handler.enqueue_source(source.into());
 
         // Try and create an embed for the queued up song.
