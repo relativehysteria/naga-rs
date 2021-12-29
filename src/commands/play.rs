@@ -76,7 +76,12 @@ impl ApplicationCommandImplementation for Play {
                                          "Not in a voice channel").await,
         };
 
-        // Attempt to insert the song into the queue
+        // Before we look for the source of the song, we first have to inform
+        // the user that we are doing something at all.
+        // This has to be done within 3 seconds of the interaction spawn
+        // otherwise Discord thinks we're dead...
+        // https://github.com/goverfl0w/discord-interactions/issues/30#issuecomment-753583597
+        response(command, &ctx.http, "Queueing...").await?;
 
         // Get the audio source
         let source = if term.starts_with("http") {
@@ -106,10 +111,11 @@ impl ApplicationCommandImplementation for Play {
         // Create the embed
         let embed = create_embed_for_track(&song, "Enqueued").unwrap();
 
-        command.create_interaction_response(&ctx.http, |response| {
-            response.interaction_response_data(|msg| {
-                msg.add_embed(embed)
-            })
-        }).await
+        command.edit_original_interaction_response(&ctx.http, |response| {
+            response
+                .content("Queued up!")
+                .add_embed(embed)
+        }).await?;
+        Ok(())
     }
 }
