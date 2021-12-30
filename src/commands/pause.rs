@@ -32,17 +32,17 @@ impl ApplicationCommandImplementation for Pause {
         let guild_id = command.guild_id.unwrap();
 
         // Get the VC lock
-        let handler_lock = match manager.get(guild_id) {
-            Some(lock) => lock,
-            None       => return response(command, &ctx.http,
-                                          "Not in a voice channel").await,
-        };
+        let handler_lock = manager.get(guild_id).unwrap();
 
         // Get the currently playing song
-        let cur = match handler_lock.lock().await.queue().current() {
-            Some(song) => song,
-            None       => return response(command, &ctx.http,
-                                          "No song is currently playing").await,
+        let cur = {
+            match handler_lock.lock().await.queue().current() {
+                Some(song) => song,
+                None       => {
+                    return response(command, &ctx.http,
+                                    "No song is currently playing").await;
+                }
+            }
         };
 
         // Pause the song if it's playing, resume it if it's paused,

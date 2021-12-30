@@ -52,11 +52,7 @@ impl ApplicationCommandImplementation for Remove {
         let guild_id = command.guild_id.unwrap();
 
         // Get the VC lock
-        let handler_lock = match manager.get(guild_id) {
-            Some(lock) => lock,
-            None       => return response(command, &ctx.http,
-                                          "Not in a voice channel").await,
-        };
+        let handler_lock = manager.get(guild_id).unwrap();
 
         // Get the queue
         let queue = {

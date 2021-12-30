@@ -22,6 +22,10 @@ impl ApplicationCommandImplementation for Ping {
         "A ping command.".to_string()
     }
 
+    fn requires_voice_chat(&self) -> bool {
+        false
+    }
+
     async fn handle_interaction(
         &self,
         ctx: &Context,

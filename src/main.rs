@@ -37,10 +37,23 @@ impl EventHandler for SlashHandler {
 
             // And execute it.
             if let Some(command) = command {
-                if interaction.guild_id.is_none() {
-                    let _ = response(&interaction, &ctx.http,
-                             "Command not used from a guild").await;
-                    return;
+                // All commands have to be used from inside a guild.
+                let guild_id = match interaction.guild_id {
+                    Some(id) => id,
+                    None     => {
+                        let _ = response(&interaction, &ctx.http,
+                                 "Command not used from a guild").await;
+                        return;
+                    },
+                };
+
+                // Some commands require the user to be in a voice channel.
+                if command.requires_voice_chat() {
+                    if get_songbird(&ctx).await.get(guild_id).is_none() {
+                        let _ = response(&interaction, &ctx.http,
+                                 "Not in a voice channel").await;
+                        return;
+                    }
                 }
 
                 // Errors are handled by the CALLER.

@@ -31,17 +31,15 @@ impl ApplicationCommandImplementation for Current {
         let guild_id = command.guild_id.unwrap();
 
         // Get the VC lock
-        let handler_lock = match manager.get(guild_id) {
-            Some(lock) => lock,
-            None       => return response(command, &ctx.http,
-                                          "Not in a voice channel").await,
-        };
+        let handler_lock = manager.get(guild_id).unwrap();
 
         // Get the metadata about the currently playing song
-        let current  = match handler_lock.lock().await.queue().current() {
-            Some(current) => current,
-            None          => return response(command, &ctx.http,
-                                             "No song is playing").await,
+        let current  = {
+            match handler_lock.lock().await.queue().current() {
+                Some(current) => current,
+                None          => return response(command, &ctx.http,
+                                                 "No song is playing").await,
+            }
         };
 
         // Create the embed

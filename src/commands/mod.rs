@@ -77,6 +77,12 @@ pub trait ApplicationCommandImplementation {
         "".to_string()
     }
 
+    /// Whether this commands requires the user to be inside a voice chat
+    /// `true` by default.
+    fn requires_voice_chat(&self) -> bool {
+        true
+    }
+
     /// The function that is passed to `create_global_application_command`
     fn command_signature<'a>(
         &self,
@@ -119,7 +125,7 @@ pub async fn response(
 }
 
 /// Returns the songbird manager
-async fn get_songbird(ctx: &Context) -> Arc<Songbird> {
+pub async fn get_songbird(ctx: &Context) -> Arc<Songbird> {
     songbird::get(ctx)
     .await
     .expect("Songbird Voice client placed in at initialisation.")

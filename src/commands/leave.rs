@@ -30,12 +30,6 @@ impl ApplicationCommandImplementation for Leave {
         // Get the guild id
         let guild_id = command.guild_id.unwrap();
 
-        // Check that we are in a voice channel
-        if manager.get(guild_id).is_none() {
-            return response(command, &ctx.http, "Not in a voice channel.")
-                .await;
-        }
-
         // Attempt to leave the voice channel
         if let Err(e) = manager.remove(guild_id).await {
             let err = format!(

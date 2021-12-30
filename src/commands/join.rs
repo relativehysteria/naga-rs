@@ -21,6 +21,10 @@ impl ApplicationCommandImplementation for Join {
         "Joins your voice channel.".to_string()
     }
 
+    fn requires_voice_chat(&self) -> bool {
+        false
+    }
+
     async fn handle_interaction(
         &self,
         ctx: &Context,

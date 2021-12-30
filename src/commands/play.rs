@@ -65,11 +65,7 @@ impl ApplicationCommandImplementation for Play {
         };
 
         // Get the VC lock
-        let handler_lock = match manager.get(guild_id) {
-            Some(lock) => lock,
-            None       => return response(command, &ctx.http,
-                                         "Not in a voice channel").await,
-        };
+        let handler_lock = manager.get(guild_id).unwrap();
 
         // Before we look for the source of the song, we first have to inform
         // the user that we are doing something at all.

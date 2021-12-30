@@ -30,17 +30,16 @@ impl ApplicationCommandImplementation for Skip {
         // Get the guild_id
         let guild_id = command.guild_id.unwrap();
 
+        // Get the lock
+        let handler_lock = manager.get(guild_id).unwrap();
+
         // Skip the song
-        if let Some(lock) = manager.get(guild_id) {
-            if let Err(e) = lock.lock().await.queue().skip() {
-                eprintln!("Error while trying to skip: {:?}", e);
-                response(command, &ctx.http,
-                         "An error has occurred while trying to skip").await
-            } else {
-                response(command, &ctx.http, "Skipped.").await
-            }
+        if let Err(e) = { let r=handler_lock.lock().await.queue().skip(); r } {
+            eprintln!("Error while trying to skip: {:?}", e);
+            response(command, &ctx.http,
+                     "An error has occurred while trying to skip").await
         } else {
-            response(command, &ctx.http, "Not in a voice channel").await
+            response(command, &ctx.http, "Skipped.").await
         }
     }
 }
