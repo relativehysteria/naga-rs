@@ -1,3 +1,4 @@
+//! Utility functions.
 use std::sync::Arc;
 use songbird::{
     Songbird,
