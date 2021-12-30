@@ -32,7 +32,7 @@ pub async fn get_songbird(ctx: &Context) -> Arc<Songbird> {
 }
 
 /// Parses a duration into a readable string.
-fn parse_duration(duration: std::time::Duration) -> String {
+pub fn parse_duration(duration: std::time::Duration) -> String {
     let mut seconds = duration.as_secs();
     let days        = seconds / (24 * 3600);
     seconds        %= 24 * 3600;
