@@ -1,5 +1,8 @@
 //! This is a template implementation for slash commands.
-use crate::commands::*;
+use crate::{
+    utils::*,
+    commands::*,
+};
 use serenity::{
     prelude::SerenityError,
     async_trait,

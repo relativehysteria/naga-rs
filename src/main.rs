@@ -1,3 +1,7 @@
+use naga_rs::{
+    commands::*,
+    utils::*,
+};
 use std::fs::read_to_string;
 use serenity::{
     async_trait,
@@ -8,7 +12,6 @@ use serenity::{
     },
 };
 use songbird::SerenityInit;
-use naga_rs::commands::*;
 
 
 /// Handler for slash commands

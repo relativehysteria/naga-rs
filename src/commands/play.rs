@@ -1,4 +1,7 @@
-use crate::commands::*;
+use crate::{
+    utils::*,
+    commands::*,
+};
 use serenity::{
     builder::CreateApplicationCommand,
     prelude::SerenityError,
