@@ -51,7 +51,7 @@ impl ApplicationCommandImplementation for Shuffle {
                 },
             };
             lock.lock().await.queue().modify_queue(|q| {
-                q.make_contiguous().shuffle(&mut rand::thread_rng());
+                q.make_contiguous()[1..].shuffle(&mut rand::thread_rng());
             });
         }
         command.edit_original_interaction_response(&ctx.http, |resp| {
