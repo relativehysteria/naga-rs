@@ -1,5 +1,8 @@
 //! Utility functions.
-use std::sync::Arc;
+use std::{
+    sync::Arc,
+    process::Command,
+};
 use songbird::{
     Songbird,
     tracks::TrackHandle,
@@ -88,4 +91,19 @@ pub fn create_embed_for_track(
     }
 
     Some(embed.clone())
+}
+
+/// Extracts the urls from a playlist. Returns a single url if the url doesn't
+/// contain a playlist.
+pub fn extract_urls<'a, 'b>(term: &'a str) -> Vec<String> {
+    let extractor = "src/get_playlist_urls.py";
+    let output = Command::new(extractor)
+        .arg(term)
+        .output()
+        .expect(&format!("Failed to execute url extractor: {}", extractor));
+
+    let stdout = std::str::from_utf8(&output.stdout)
+        .expect("Couldn't parse extracted urls");
+
+    stdout.lines().map(|line| line.trim().to_string()).collect()
 }

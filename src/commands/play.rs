@@ -50,8 +50,6 @@ impl ApplicationCommandImplementation for Play {
         ctx: &Context,
         command: &ApplicationCommandInteraction
     ) -> Result<(), SerenityError> {
-        let err_msg = "Must provide a URL or a search term.";
-
         // Get the songbird manager
         let manager = get_songbird(ctx).await;
 
@@ -64,11 +62,11 @@ impl ApplicationCommandImplementation for Play {
         let term = if let Some(ACIDOV::String(term)) = term {
             term.clone()
         } else {
-            return response(command, &ctx.http, err_msg).await;
+            return response(
+                command, &ctx.http,
+                "An error has occurred while trying to get the song"
+            ).await;
         };
-
-        // Get the VC lock
-        let handler_lock = manager.get(guild_id).unwrap();
 
         // Before we look for the source of the song, we first have to inform
         // the user that we are doing something at all.
@@ -77,40 +75,81 @@ impl ApplicationCommandImplementation for Play {
         // https://github.com/goverfl0w/discord-interactions/issues/30#issuecomment-753583597
         response(command, &ctx.http, "Queueing...").await?;
 
-        // Get the audio source
-        let source = if term.starts_with("http") {
-            Restartable::ytdl(term, true).await
+        // Get the urls
+        let urls = if term.starts_with("http") {
+            // A url. If it is a playlist, get the urls to the tracks
+            extract_urls(&term)
         } else {
-            Restartable::ytdl_search(term, true).await
+            // Not an url, just a search term
+            vec![term]
         };
-        let source = match source {
-            Ok(source) => source,
-            Err(e)     => {
-                eprintln!("Error while queueing a song: {:?}", e);
-                return response(command, &ctx.http,
-                                "Couldn't fetch audio stream source.")
-                    .await;
+
+        // Enqueue the urls
+        let url_len = urls.len();
+        for (i, url) in urls.into_iter().enumerate() {
+            let i = i + 1;
+            // Get the restartable ytdl thing
+            let ytdl = if url.starts_with("http") {
+                Restartable::ytdl(url, true).await
+            } else {
+                Restartable::ytdl_search(url, true).await
+            };
+            let ytdl = match ytdl {
+                Ok(ytdl) => ytdl,
+                Err(e)     => {
+                    eprintln!("Error while queueing a song: {:?}", e);
+                    return response(command, &ctx.http,
+                                    "Couldn't fetch audio stream source.")
+                        .await;
+                },
+            };
+
+            // Get the handler lock. This could fail if a bot leaves a voice
+            // channel when it's still queueing.
+            let handler_lock = match manager.get(guild_id) {
+                Some(lock) => lock,
+                None       => {
+                    command.edit_original_interaction_response(&ctx.http, |r| {
+                        r
+                            .content("Aborted.")
+                    }).await?;
+                    return Ok(());
+                },
+            };
+
+            // Enqueue the source
+            let mut handler = handler_lock.lock().await;
+            handler.enqueue_source(ytdl.into());
+
+            // If there is only one song being enqueued, create an embed.
+            // If there's more of them, show how many we've enqueued
+            // and whether we're done.
+            if url_len == 1 {
+                let queue    = handler.queue().current_queue();
+                drop(handler);
+                let song     = queue.last().unwrap();
+
+                // Create the embed
+                let embed = create_embed_for_track(&song, "Enqueued").unwrap();
+
+                command.edit_original_interaction_response(&ctx.http, |resp| {
+                    resp
+                        .content("Queued up!")
+                        .add_embed(embed)
+                }).await?;
+            } else if url_len != i+1 {
+                command.edit_original_interaction_response(&ctx.http, |resp| {
+                    resp
+                        .content(format!("Queueing.. ({}/{})", i, url_len))
+                }).await?;
+            } else {
+                command.edit_original_interaction_response(&ctx.http, |resp| {
+                    resp
+                        .content(format!("FINISHED! ({}/{})", i, url_len))
+                }).await?;
             }
-        };
+        }
 
-        // Enqueue the source
-        let mut handler = handler_lock.lock().await;
-        handler.enqueue_source(source.into());
-
-        // Try and create an embed for the queued up song.
-        // First, get the metadata of the song
-        let queue    = handler.queue().current_queue();
-        drop(handler);
-        let song     = queue.last().unwrap();
-
-        // Create the embed
-        let embed = create_embed_for_track(&song, "Enqueued").unwrap();
-
-        command.edit_original_interaction_response(&ctx.http, |response| {
-            response
-                .content("Queued up!")
-                .add_embed(embed)
-        }).await?;
         Ok(())
     }
 }
