@@ -69,7 +69,7 @@ pub trait ApplicationCommandImplementation {
         "".to_string()
     }
 
-    /// Whether this commands requires the user to be inside a voice chat
+    /// Whether this commands requires the user to be inside a voice chat.
     /// `true` by default.
     fn requires_voice_chat(&self) -> bool {
         true
