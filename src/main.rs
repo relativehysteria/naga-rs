@@ -30,12 +30,19 @@ impl EventHandler for SlashHandler {
     /// Handle slash commands
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(interaction) = interaction {
+
             // Find the command, if it exists.
             let name    = &interaction.data.name;
             let command = self.commands.iter().find(|x| &x.alias() == name);
 
             // And execute it.
             if let Some(command) = command {
+                if interaction.guild_id.is_none() {
+                    let _ = response(&interaction, &ctx.http,
+                             "Command not used from a guild").await;
+                    return;
+                }
+
                 // Errors are handled by the CALLER.
                 let res = command.handle_interaction(&ctx, &interaction).await;
                 if let Err(e) = res {

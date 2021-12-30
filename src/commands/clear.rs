@@ -28,18 +28,14 @@ impl ApplicationCommandImplementation for Clear {
         let manager = get_songbird(ctx).await;
 
         // Get the guild_id
-        if let Some(guild_id) = command.guild_id {
-            // Clear the queue
-            if let Some(lock) = manager.get(guild_id) {
-                lock.lock().await.queue().stop();
-                response(command, &ctx.http, "Queue cleared").await
-            } else {
-                response(command, &ctx.http, "Not in a voice channel").await
-            }
+        let guild_id = command.guild_id.unwrap();
+
+        // Clear the queue
+        if let Some(lock) = manager.get(guild_id) {
+            lock.lock().await.queue().stop();
+            response(command, &ctx.http, "Queue cleared").await
         } else {
-            response(command, &ctx.http, "Command not used from a guild")
-                .await
+            response(command, &ctx.http, "Not in a voice channel").await
         }
     }
-
 }

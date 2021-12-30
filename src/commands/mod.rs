@@ -106,7 +106,7 @@ pub trait ApplicationCommandImplementation {
 
 
 /// Creates and sends a simple text interaction response.
-async fn response(
+pub async fn response(
     command: &ApplicationCommandInteraction,
     http: &serenity::http::Http,
     message: &str,

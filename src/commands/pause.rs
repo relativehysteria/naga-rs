@@ -29,11 +29,7 @@ impl ApplicationCommandImplementation for Pause {
         let manager = get_songbird(ctx).await;
 
         // Get the guild_id
-        let guild_id = match command.guild_id {
-            Some(id) => id,
-            None     => return response(command, &ctx.http,
-                                        "Command not used from a guild").await,
-        };
+        let guild_id = command.guild_id.unwrap();
 
         // Get the VC lock
         let handler_lock = match manager.get(guild_id) {

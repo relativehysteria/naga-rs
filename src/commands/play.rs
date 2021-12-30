@@ -52,6 +52,9 @@ impl ApplicationCommandImplementation for Play {
         // Get the songbird manager
         let manager = get_songbird(ctx).await;
 
+        // Get the guild_id
+        let guild_id = command.guild_id.unwrap();
+
         // Get the search term
         let term = command.data.options.get(0)
             .and_then(|term| term.resolved.as_ref());
@@ -59,13 +62,6 @@ impl ApplicationCommandImplementation for Play {
             term.clone()
         } else {
             return response(command, &ctx.http, err_msg).await;
-        };
-
-        // Get the guild_id
-        let guild_id = match command.guild_id {
-            Some(id) => id,
-            None     => return response(command, &ctx.http,
-                                        "Command not used from a guild").await,
         };
 
         // Get the VC lock
