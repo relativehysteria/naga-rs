@@ -98,9 +98,7 @@ impl ApplicationCommandImplementation for Play {
                 Ok(ytdl) => ytdl,
                 Err(e)     => {
                     eprintln!("Error while queueing a song: {:?}", e);
-                    return response(command, &ctx.http,
-                                    "Couldn't fetch audio stream source.")
-                        .await;
+                    continue;
                 },
             };
 
