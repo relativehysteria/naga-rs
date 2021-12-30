@@ -1,5 +1,5 @@
 //! This is a template implementation for slash commands.
-use crate::commands::ApplicationCommandImplementation;
+use crate::commands::*;
 use serenity::{
     prelude::SerenityError,
     async_trait,
@@ -27,12 +27,7 @@ impl ApplicationCommandImplementation for Ping {
         ctx: &Context,
         command: &ApplicationCommandInteraction
     ) -> Result<(), SerenityError> {
-        command.create_interaction_response(&ctx.http, |response| {
-            response
-                .interaction_response_data(|msg| {
-                    msg.content("I'm alive! :)")
-                })
-        }).await
+        response(command, &ctx.http, "Pong").await
     }
 
 }
