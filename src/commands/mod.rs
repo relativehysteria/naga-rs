@@ -9,7 +9,6 @@
 //! 5. Publicly re-export the command struct in `mod.rs` (`pub use ping::Ping;`).
 //! 6. Add the struct to the vector returned by `get_bot_commands()`.
 use std::sync::Arc;
-
 use serenity::{
     prelude::SerenityError,
     async_trait,
@@ -20,7 +19,6 @@ use serenity::{
     },
     model::prelude::application_command::ApplicationCommandInteraction,
 };
-
 use songbird::{
     tracks::TrackHandle,
     Songbird,

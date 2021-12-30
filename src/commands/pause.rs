@@ -5,7 +5,6 @@ use serenity::{
     client::Context,
     model::prelude::application_command::ApplicationCommandInteraction,
 };
-
 use songbird::tracks::PlayMode;
 
 /// Pauses the currently playing song, if there is one playing.

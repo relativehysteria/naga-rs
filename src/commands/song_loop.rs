@@ -5,7 +5,6 @@ use serenity::{
     client::Context,
     model::prelude::application_command::ApplicationCommandInteraction,
 };
-
 use songbird::tracks::LoopState;
 
 /// Puts the currently playing song on a loop

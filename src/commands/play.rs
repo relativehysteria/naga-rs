@@ -10,7 +10,6 @@ use serenity::{
         ApplicationCommandInteractionDataOptionValue as ACIDOV,
     },
 };
-
 use songbird::input::Restartable;
 
 /// Plays something in the voice chat that the bot is connected to.

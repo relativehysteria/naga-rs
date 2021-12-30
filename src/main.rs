@@ -1,5 +1,4 @@
 use std::fs::read_to_string;
-
 use serenity::{
     async_trait,
     prelude::*,
@@ -8,9 +7,7 @@ use serenity::{
         interactions::application_command::ApplicationCommand,
     },
 };
-
 use songbird::SerenityInit;
-
 use naga_rs::commands::*;
 
 
