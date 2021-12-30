@@ -105,6 +105,7 @@ impl ApplicationCommandImplementation for Play {
         // Try and create an embed for the queued up song.
         // First, get the metadata of the song
         let queue    = handler.queue().current_queue();
+        drop(handler);
         let song     = queue.last().unwrap();
 
         // Create the embed
