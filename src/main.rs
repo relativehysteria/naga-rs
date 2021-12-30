@@ -48,8 +48,11 @@ impl EventHandler for SlashHandler {
     /// Register the `ApplicationCommand`s into the bot when its internal
     /// `GuildId` cache is ready.
     async fn ready(&self, ctx: Context, _ready: Ready) {
-        for cmd in &self.commands {
-            println!("Registering command: {}", cmd.alias());
+        for (idx, cmd) in self.commands.iter().enumerate() {
+            println!(
+                "Registering command {:02}/{:02}: {} ",
+                idx+1, self.commands.len(), cmd.alias(),
+            );
             let result = ApplicationCommand::create_global_application_command(
                 &ctx.http, |app_cmd| {
                     cmd.command_signature(app_cmd)
