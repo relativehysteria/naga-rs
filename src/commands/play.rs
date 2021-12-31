@@ -96,7 +96,7 @@ impl ApplicationCommandImplementation for Play {
             };
             let ytdl = match ytdl {
                 Ok(ytdl) => ytdl,
-                Err(e)     => {
+                Err(e)   => {
                     eprintln!("Error while queueing a song: {:?}", e);
                     continue;
                 },
@@ -123,9 +123,9 @@ impl ApplicationCommandImplementation for Play {
             // If there's more of them, show how many we've enqueued
             // and whether we're done.
             if url_len == 1 {
-                let queue    = handler.queue().current_queue();
+                let queue = handler.queue().current_queue();
                 drop(handler);
-                let song     = queue.last().unwrap();
+                let song = queue.last().unwrap();
 
                 // Create the embed
                 let embed = create_embed_for_track(&song, "Enqueued").unwrap();
