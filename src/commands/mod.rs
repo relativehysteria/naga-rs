@@ -27,6 +27,7 @@ mod current;
 mod song_loop;
 mod remove;
 mod shuffle;
+mod queue;
 pub use ping::Ping;
 pub use join::Join;
 pub use leave::Leave;
@@ -38,6 +39,7 @@ pub use current::Current;
 pub use song_loop::SongLoop;
 pub use remove::Remove;
 pub use shuffle::Shuffle;
+pub use queue::Queue;
 
 /// Returns a `Vec` of _all_ the `ApplicationCommandImplementation`s this bot
 /// has.
@@ -55,6 +57,7 @@ pub fn get_bot_commands() -> Vec<Box<dyn ApplicationCommandImplementation + Sync
         Box::new(SongLoop),
         Box::new(Remove),
         Box::new(Shuffle),
+        Box::new(Queue),
     ]
 }
 
