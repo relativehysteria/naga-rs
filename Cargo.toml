@@ -12,7 +12,7 @@ features = ["builtin-queue"]
 
 [dependencies.serenity]
 version = "0.10"
-features = ["cache", "voice", "rustls_backend", "unstable_discord_api"]
+features = ["cache", "voice", "rustls_backend", "unstable_discord_api", "collector"]
 default-features = false
 
 [dependencies.tokio]

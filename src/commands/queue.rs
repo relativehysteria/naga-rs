@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::{
     utils::*,
     commands::*,
@@ -6,8 +7,15 @@ use serenity::{
     prelude::SerenityError,
     async_trait,
     client::Context,
-    builder::CreateEmbed,
-    model::prelude::application_command::ApplicationCommandInteraction,
+    builder::{
+        CreateEmbed,
+        CreateButton,
+    },
+    futures::StreamExt,
+    model::{
+        prelude::application_command::ApplicationCommandInteraction,
+        interactions::message_component::ButtonStyle,
+    },
 };
 use songbird::{
     tracks::TrackHandle,
@@ -16,6 +24,60 @@ use songbird::{
 
 /// Shows the currently enqueued songs. 5 songs per page.
 pub struct Queue;
+
+impl Queue {
+    fn first_button(&self, page: usize) -> CreateButton {
+        let mut button = CreateButton(HashMap::new());
+        let button = button
+            .style(ButtonStyle::Primary)
+            .label("<<")
+            .custom_id("first");
+        if page == 1 {
+            button.disabled(true).clone()
+        } else {
+            button.clone()
+        }
+    }
+
+    fn prev_button(&self, page: usize) -> CreateButton {
+        let mut button = CreateButton(HashMap::new());
+        let button = button
+            .style(ButtonStyle::Primary)
+            .label("<")
+            .custom_id("prev");
+        if page == 1 {
+            button.disabled(true).clone()
+        } else {
+            button.clone()
+        }
+    }
+
+    fn next_button(&self, max_page: usize) -> CreateButton {
+        let mut button = CreateButton(HashMap::new());
+        let button = button
+            .style(ButtonStyle::Primary)
+            .label(">")
+            .custom_id("next");
+        if max_page == 1 {
+            button.disabled(true).clone()
+        } else {
+            button.clone()
+        }
+    }
+
+    fn last_button(&self, max_page: usize) -> CreateButton {
+        let mut button = CreateButton(HashMap::new());
+        let button = button
+            .style(ButtonStyle::Primary)
+            .label(">>")
+            .custom_id("last");
+        if max_page == 1 {
+            button.disabled(true).clone()
+        } else {
+            button.clone()
+        }
+    }
+}
 
 #[async_trait]
 impl ApplicationCommandImplementation for Queue {
@@ -55,10 +117,68 @@ impl ApplicationCommandImplementation for Queue {
             return Ok(());
         }
 
-        let embed = create_queue_embed(&queue, 1);
-        if let Some(embed) = embed {
+        // Data needed for the queue page to work
+        let tpp      = 5;  // Tracks per page
+        let timeout  = std::time::Duration::from_secs(60);
+        let mut page = 1;
+        let max_page = (queue.len() as f32 / tpp as f32).ceil() as usize;
+
+        // Create the first page.
+        // If the first page can't be created, just return.
+        let mut embed = match create_queue_embed(&queue, tpp, page) {
+            Some(embed) => embed,
+            None        => return Ok(()),
+        };
+        command.edit_original_interaction_response(&ctx.http, |r| {
+            r
+                .content("")
+                .add_embed(embed)
+                .components(|comps| {
+                    comps.create_action_row(|row| {
+                        row
+                            .add_button(self.first_button(page))
+                            .add_button(self.prev_button(page))
+                            .add_button(self.next_button(max_page))
+                            .add_button(self.last_button(max_page))
+                    })
+                })
+        }).await?;
+
+        // Create a stream for the button interactions
+        let mut interaction_stream = command
+            .get_interaction_response(&ctx.http).await?
+            .await_component_interactions(&ctx.shard)
+            .timeout(timeout)
+            .await;
+
+        // Capture interactions
+        while let Some(interaction) = interaction_stream.next().await {
+            match interaction.data.custom_id.as_str() {
+                "first" => page = 1,
+                "prev"  => page = usize::max(page - 1, 1),
+                "next"  => page = usize::min(page + 1, max_page),
+                "last"  => page = max_page,
+                ______  => unreachable!(),
+            }
+
+            embed = match create_queue_embed(&queue, tpp, page) {
+                Some(embed) => embed,
+                None        => continue,
+            };
+            let _ = response(command, &ctx.http, "").await;
             let _ = command.edit_original_interaction_response(&ctx.http, |r| {
-                r.add_embed(embed)
+                r
+                    .content("")
+                    .add_embed(embed)
+                    .components(|comps| {
+                        comps.create_action_row(|row| {
+                            row
+                                .add_button(self.first_button(page))
+                                .add_button(self.prev_button(page))
+                                .add_button(self.next_button(max_page))
+                                .add_button(self.last_button(max_page))
+                        })
+                    })
             }).await;
         }
         Ok(())
@@ -70,10 +190,11 @@ impl ApplicationCommandImplementation for Queue {
 /// This function _does_ check whether the `page` can be created at all.
 /// In the case it can't, it returns `None`. Tracks with no title will be shown,
 /// but with no title..
-fn create_queue_embed(queue: &[TrackHandle], page: usize)
--> Option<CreateEmbed> {
-    let tracks_per_page = 5;
-
+fn create_queue_embed(
+    queue: &[TrackHandle],
+    tracks_per_page: usize,
+    page: usize
+) -> Option<CreateEmbed> {
     // Get the `page` bounds
     let min_page = 1;
     let max_page = (queue.len() as f32 / tracks_per_page as f32).ceil() as usize;
@@ -89,11 +210,12 @@ fn create_queue_embed(queue: &[TrackHandle], page: usize)
     let max_track = usize::min(min_track + tracks_per_page, queue.len());
 
     // Get the lines to show in the queue page
-    let track_lines = &queue[min_track..max_track].iter().enumerate()
+    let track_lines = &queue.iter().enumerate()
+        .filter(|(i, _)| *i >= min_track && *i < max_track)
         .map(|(i, tr)| format!("`{}` {}\n", i+1, get_queue_line(tr.metadata())))
         .collect::<String>();
 
-    let mut embed = CreateEmbed(std::collections::HashMap::new());
+    let mut embed = CreateEmbed(HashMap::new());
     embed.field("Current", get_queue_line(queue[0].metadata()), false);
     if track_lines != "" {
         embed.field("Next up", track_lines, false);
