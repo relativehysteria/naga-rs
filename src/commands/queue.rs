@@ -210,9 +210,9 @@ fn create_queue_embed(
     let max_track = usize::min(min_track + tracks_per_page, queue.len());
 
     // Get the lines to show in the queue page
-    let track_lines = &queue.iter().enumerate()
-        .filter(|(i, _)| *i >= min_track && *i < max_track)
-        .map(|(i, tr)| format!("`{}` {}\n", i+1, get_queue_line(tr.metadata())))
+    let track_lines = &queue[min_track..max_track].iter()
+        .zip(min_track..max_track)
+        .map(|(tr, i)| format!("`{}` {}\n", i, get_queue_line(tr.metadata())))
         .collect::<String>();
 
     let mut embed = CreateEmbed(HashMap::new());
