@@ -135,7 +135,7 @@ impl ApplicationCommandImplementation for Play {
                         .content("Queued up!")
                         .add_embed(embed)
                 }).await?;
-            } else if url_len != i+1 {
+            } else if url_len != i {
                 command.edit_original_interaction_response(&ctx.http, |resp| {
                     resp
                         .content(format!("Queueing.. ({}/{})", i, url_len))
@@ -143,7 +143,7 @@ impl ApplicationCommandImplementation for Play {
             } else {
                 command.edit_original_interaction_response(&ctx.http, |resp| {
                     resp
-                        .content(format!("FINISHED! ({}/{})", i, url_len))
+                        .content(format!("Finished! ({}/{})", i, url_len))
                 }).await?;
             }
         }
