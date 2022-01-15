@@ -26,56 +26,29 @@ use songbird::{
 pub struct Queue;
 
 impl Queue {
+    fn button(label: &str, id: &str, disabled: bool) -> CreateButton {
+        let mut button = CreateButton(HashMap::new());
+        let button = button
+            .style(ButtonStyle::Primary)
+            .label(label)
+            .custom_id(id);
+        if disabled {
+            button.disabled(true).clone()
+        } else {
+            button.clone()
+        }
+    }
     fn first_button(&self, page: usize) -> CreateButton {
-        let mut button = CreateButton(HashMap::new());
-        let button = button
-            .style(ButtonStyle::Primary)
-            .label("<<")
-            .custom_id("first");
-        if page == 1 {
-            button.disabled(true).clone()
-        } else {
-            button.clone()
-        }
+        Queue::button("<<", "first", page == 1)
     }
-
     fn prev_button(&self, page: usize) -> CreateButton {
-        let mut button = CreateButton(HashMap::new());
-        let button = button
-            .style(ButtonStyle::Primary)
-            .label("<")
-            .custom_id("prev");
-        if page == 1 {
-            button.disabled(true).clone()
-        } else {
-            button.clone()
-        }
+        Queue::button("<", "prev", page == 1)
     }
-
     fn next_button(&self, max_page: usize) -> CreateButton {
-        let mut button = CreateButton(HashMap::new());
-        let button = button
-            .style(ButtonStyle::Primary)
-            .label(">")
-            .custom_id("next");
-        if max_page == 1 {
-            button.disabled(true).clone()
-        } else {
-            button.clone()
-        }
+        Queue::button(">", "next", max_page == 1)
     }
-
     fn last_button(&self, max_page: usize) -> CreateButton {
-        let mut button = CreateButton(HashMap::new());
-        let button = button
-            .style(ButtonStyle::Primary)
-            .label(">>")
-            .custom_id("last");
-        if max_page == 1 {
-            button.disabled(true).clone()
-        } else {
-            button.clone()
-        }
+        Queue::button(">>", "last", max_page == 1)
     }
 }
 
