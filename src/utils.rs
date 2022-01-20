@@ -54,8 +54,6 @@ pub fn parse_duration(duration: std::time::Duration) -> String {
 }
 
 /// Creates an embed for the given `TrackHandle`
-///
-/// `title` is the title for the embed.
 pub fn create_embed_for_track(
     track: &TrackHandle,
     embed_title: &str
@@ -95,7 +93,7 @@ pub fn create_embed_for_track(
 
 /// Extracts the urls from a playlist. Returns a single url if the url doesn't
 /// contain a playlist.
-pub fn extract_urls<'a, 'b>(term: &'a str) -> Vec<String> {
+pub fn extract_urls(term: &str) -> Vec<String> {
     let extractor = "src/get_playlist_urls.py";
     let output = Command::new(extractor)
         .arg(term)

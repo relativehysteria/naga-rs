@@ -5,9 +5,8 @@
 //! 2. In there, create a new struct called `Ping`
 //! _(though it can be called anything..)_
 //! 3. Implement the `ApplicationCommandImplementation` trait for the struct.
-//! 4. Export the file in `mod.rs` (`mod ping`).
-//! 5. Publicly re-export the command struct in `mod.rs` (`pub use ping::Ping;`).
-//! 6. Add the struct to the vector returned by `get_bot_commands()`.
+//! 4. Add the module (`ping`) and the struct (`Ping`) to the `implement!()`
+//! macro in `mod.rs`
 use serenity::{
     prelude::SerenityError,
     async_trait,
@@ -16,51 +15,41 @@ use serenity::{
     model::prelude::application_command::ApplicationCommandInteraction,
 };
 
-mod ping;
-mod join;
-mod leave;
-mod play;
-mod clear;
-mod skip;
-mod pause;
-mod current;
-mod song_loop;
-mod remove;
-mod shuffle;
-mod queue;
-pub use ping::Ping;
-pub use join::Join;
-pub use leave::Leave;
-pub use play::Play;
-pub use clear::Clear;
-pub use skip::Skip;
-pub use pause::Pause;
-pub use current::Current;
-pub use song_loop::SongLoop;
-pub use remove::Remove;
-pub use shuffle::Shuffle;
-pub use queue::Queue;
+macro_rules! implement {
+    ( $(($mod:ident, $function_struct:ident)),* ) => {
+        $(
+            mod $mod;
+            pub use $mod::$function_struct;
+        )*
 
-/// Returns a `Vec` of _all_ the `ApplicationCommandImplementation`s this bot
-/// has.
-/// _New commands have to be registered here._
-pub fn get_bot_commands() -> Vec<Box<dyn ApplicationCommandImplementation + Sync + Send>> {
-    vec![
-        Box::new(Ping),
-        Box::new(Join),
-        Box::new(Leave),
-        Box::new(Play),
-        Box::new(Clear),
-        Box::new(Skip),
-        Box::new(Pause),
-        Box::new(Current),
-        Box::new(SongLoop),
-        Box::new(Remove),
-        Box::new(Shuffle),
-        Box::new(Queue),
-    ]
+        /// Returns a `Vec` of _all_ the `ApplicationCommandImplementation`s
+        /// this bot has.
+        /// _New commands have to be registered here._
+        pub fn get_bot_commands()
+        -> Vec<Box<dyn ApplicationCommandImplementation + Sync + Send>> {
+            vec![
+                $(
+                    Box::new($function_struct),
+                )*
+            ]
+        }
+    };
 }
 
+implement!(
+    (remove, Remove),
+    (ping, Ping),
+    (join, Join),
+    (leave, Leave),
+    (play, Play),
+    (clear, Clear),
+    (skip, Skip),
+    (pause, Pause),
+    (current, Current),
+    (song_loop, SongLoop),
+    (shuffle, Shuffle),
+    (queue, Queue)
+);
 
 /// Every command shall implement this trait so that it can be passed
 /// to the `EventHandler` in `main.rs`.
