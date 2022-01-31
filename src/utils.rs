@@ -1,107 +1,107 @@
 //! Utility functions.
 use std::{
-    sync::Arc,
-    process::Command,
+    sync::Arc as ARadek,
+    process::Command as CRadek,
 };
 use songbird::{
-    Songbird,
-    tracks::TrackHandle,
+    Songbird as SRadek,
+    tracks::TrackHandle as TRadek,
 };
 use serenity::{
     prelude::*,
-    model::prelude::application_command::ApplicationCommandInteraction,
-    client::Context,
-    builder::CreateEmbed,
+    model::prelude::application_command::ApplicationCommandInteraction as ApRadek,
+    client::Context as ConRadek,
+    builder::CreateEmbed as CreRadek,
 };
 
 /// Creates and sends a simple text interaction response.
-pub async fn response(
-    command: &ApplicationCommandInteraction,
-    http: &serenity::http::Http,
-    message: &str,
+pub async fn rradek(
+    radek: &ApRadek,
+    radek1: &serenity::http::Http,
+    radek2: &str,
 ) -> Result<(), SerenityError>  {
-    command.create_interaction_response(http, |response| {
-        response.interaction_response_data(|msg| {
-            msg.content(message)
+    radek.create_interaction_response(radek1, |radek4| {
+        radek4.interaction_response_data(|radek3| {
+            radek3.content(radek2)
         })
     }).await
 }
 
 /// Returns the songbird manager
-pub async fn get_songbird(ctx: &Context) -> Arc<Songbird> {
-    songbird::get(ctx)
+pub async fn sradek(radek: &ConRadek) -> ARadek<SRadek> {
+    songbird::get(radek)
     .await
-    .expect("Songbird Voice client placed in at initialisation.")
+    .expect("SRadek Voice client placed in at initialisation.")
     .clone()
 }
 
 /// Parses a duration into a readable string.
-pub fn parse_duration(duration: std::time::Duration) -> String {
-    let mut seconds = duration.as_secs();
-    let days        = seconds / (24 * 3600);
-    seconds        %= 24 * 3600;
-    let hours       = seconds / 3600;
-    seconds        %= 3600;
-    let minutes     = seconds / 60;
-    seconds        %= 60;
+pub fn pradek(radek: std::time::Duration) -> String {
+    let mut radek1 = radek.as_secs();
+    let radek2     = radek1 / (24 * 3600);
+    radek1        %= 24 * 3600;
+    let radek3     = radek1 / 3600;
+    radek1        %= 3600;
+    let radek4     = radek1 / 60;
+    radek1        %= 60;
 
-    let mut result = "".to_string();
-    if days    != 0 { result.push_str(&format!("{:02}:", days))    }
-    if hours   != 0 { result.push_str(&format!("{:02}:", hours))   }
-    result.push_str(&format!("{:02}:{:02}", minutes, seconds));
+    let mut radek5 = "".to_string();
+    if radek2     != 0 { radek5.push_str(&format!("{:02}:", radek2))   }
+    if radek3     != 0 { radek5.push_str(&format!("{:02}:", radek3))   }
+    radek5.push_str(&format!("{:02}:{:02}", radek4, radek1));
 
-    result
+    radek5
 }
 
-/// Creates an embed for the given `TrackHandle`
-pub fn create_embed_for_track(
-    track: &TrackHandle,
-    embed_title: &str
-) -> Option<CreateEmbed> {
-    let metadata = track.metadata().clone();
+/// Creates an embed for the given `TRadek`
+pub fn cradek(
+    radek: &TRadek,
+    radek1: &str
+) -> Option<CreRadek> {
+    let radek2 = radek.metadata().clone();
 
-    let source    = metadata.source_url?;
-    let channel   = metadata.channel;
-    let duration  = metadata.duration;
-    let thumbnail = metadata.thumbnail;
-    let title     = metadata.title
-        .and_then(|title| Some(format!("[{}]({})", title, source)))?;
+    let radek3 = radek2.source_url?;
+    let radek4 = radek2.channel;
+    let radek5 = radek2.duration;
+    let radek6 = radek2.thumbnail;
+    let radek7 = radek2.title
+        .and_then(|radek7| Some(format!("[{}]({})", radek7, radek3)))?;
 
-    // Create the embed
-    let mut embed = &mut CreateEmbed(std::collections::HashMap::new());
-    embed = embed
-        .title(embed_title)
-        .description(title);
+    // Create the radek_magnus
+    let mut radek_magnus = &mut CreRadek(std::collections::HashMap::new());
+    radek_magnus = radek_magnus
+        .title(radek1)
+        .description(radek7);
 
-    // Add the duration
-    if let Some(duration) = duration {
-        embed = embed.field("Duration", parse_duration(duration), true);
+    // Add the radek5
+    if let Some(radek5) = radek5 {
+        radek_magnus = radek_magnus.field("radek5", pradek(radek5), true);
     }
 
-    // Add the channel name
-    if let Some(channel) = channel {
-        embed = embed.field("Uploader", channel, true);
+    // Add the radek4 name
+    if let Some(radek4) = radek4 {
+        radek_magnus = radek_magnus.field("Uploader", radek4, true);
     }
 
-    // Add the thumbnail
-    if let Some(thumbnail) = thumbnail {
-        embed = embed.thumbnail(thumbnail);
+    // Add the radek6
+    if let Some(radek6) = radek6 {
+        radek_magnus = radek_magnus.thumbnail(radek6);
     }
 
-    Some(embed.clone())
+    Some(radek_magnus.clone())
 }
 
 /// Extracts the urls from a playlist. Returns a single url if the url doesn't
 /// contain a playlist.
-pub fn extract_urls(term: &str) -> Vec<String> {
-    let extractor = "src/get_playlist_urls.py";
-    let output = Command::new(extractor)
-        .arg(term)
+pub fn eradek(radek: &str) -> Vec<String> {
+    let radek_ex = "src/get_playlist_urls.py";
+    let radek1 = CRadek::new(radek_ex)
+        .arg(radek)
         .output()
-        .expect(&format!("Failed to execute url extractor: {}", extractor));
+        .expect(&format!("Failed to execute url radekEx: {}", radek_ex));
 
-    let stdout = std::str::from_utf8(&output.stdout)
+    let radek2 = std::str::from_utf8(&radek1.stdout)
         .expect("Couldn't parse extracted urls");
 
-    stdout.lines().map(|line| line.trim().to_string()).collect()
+    radek2.lines().map(|radek| radek.trim().to_string()).collect()
 }

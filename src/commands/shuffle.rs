@@ -4,20 +4,20 @@ use crate::{
 };
 use rand::prelude::*;
 use serenity::{
-    prelude::SerenityError,
+    prelude::SerenityError as ErrRadek,
     async_trait,
-    client::Context,
-    model::prelude::application_command::ApplicationCommandInteraction,
+    client::Context as CRadek,
+    model::prelude::application_command::ApplicationCommandInteraction as AppRadek,
 };
 
 /// Shuffles the currently enqueued songs.
 ///
 /// Like literally, those that are ENQUEUED, not those that are still being
 /// enqueued. :|
-pub struct Shuffle;
+pub struct ShuffleRadek;
 
 #[async_trait]
-impl ApplicationCommandImplementation for Shuffle {
+impl RadekHahaha for ShuffleRadek {
     fn alias(&self) -> String {
         "shuffle".to_string()
     }
@@ -28,34 +28,34 @@ impl ApplicationCommandImplementation for Shuffle {
 
     async fn handle_interaction(
         &self,
-        ctx: &Context,
-        command: &ApplicationCommandInteraction
-    ) -> Result<(), SerenityError> {
-        // Get the songbird manager
-        let manager = get_songbird(ctx).await;
+        radek: &CRadek,
+        radek1: &AppRadek
+    ) -> Result<(), ErrRadek> {
+        // Get the songbird radek2
+        let radek2 = sradek(radek).await;
 
-        // Get the guild_id
-        let guild_id = command.guild_id.unwrap();
+        // Get the radek3
+        let radek3 = radek1.guild_id.unwrap();
 
         // Shuffle the queue
-        let _ = response(command, &ctx.http, "Shuffling...").await;
+        let _ = rradek(radek1, &radek.http, "Shuffling...").await;
         {
-            let lock = match manager.get(guild_id) {
-                Some(lock) => lock,
+            let radkuv_zamek = match radek2.get(radek3) {
+                Some(radkuv_zamek) => radkuv_zamek,
                 None       => {
-                    command.edit_original_interaction_response(&ctx.http, |r| {
-                        r
+                    radek1.edit_original_interaction_response(&radek.http, |radek| {
+                        radek
                             .content("Aborted!")
                     }).await?;
                     return Ok(());
                 },
             };
-            lock.lock().await.queue().modify_queue(|q| {
-                q.make_contiguous()[1..].shuffle(&mut rand::thread_rng());
+            radkuv_zamek.lock().await.queue().modify_queue(|radek| {
+                radek.make_contiguous()[1..].shuffle(&mut rand::thread_rng());
             });
         }
-        command.edit_original_interaction_response(&ctx.http, |resp| {
-            resp
+        radek1.edit_original_interaction_response(&radek.http, |radek| {
+            radek
                 .content("Shuffled!")
         }).await?;
         Ok(())

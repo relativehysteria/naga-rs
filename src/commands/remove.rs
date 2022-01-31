@@ -3,21 +3,21 @@ use crate::{
     commands::*,
 };
 use serenity::{
-    prelude::SerenityError,
+    prelude::SerenityError as ErrRadek,
     async_trait,
-    client::Context,
+    client::Context as CRadek,
     model::prelude::application_command::{
-        ApplicationCommandInteraction,
-        ApplicationCommandOptionType,
-        ApplicationCommandInteractionDataOptionValue as ACIDOV,
+        ApplicationCommandInteraction as AppRadek,
+        ApplicationCommandOptionType as ACOTRadek,
+        ApplicationCommandInteractionDataOptionValue as ACIRadek,
     }
 };
 
 /// Removes a song from the queue
-pub struct Remove;
+pub struct RemoveRadek;
 
 #[async_trait]
-impl ApplicationCommandImplementation for Remove {
+impl RadekHahaha for RemoveRadek {
     fn alias(&self) -> String {
         "remove".to_string()
     }
@@ -28,64 +28,64 @@ impl ApplicationCommandImplementation for Remove {
 
     fn command_signature<'a>(
         &self,
-        command: &'a mut CreateApplicationCommand
+        radek: &'a mut CreateApplicationCommand
     ) -> &'a mut CreateApplicationCommand {
-        command
+        radek
             .name(self.alias())
             .description(self.description())
-            .create_option(|opt| {
-                opt
+            .create_option(|radek| {
+                radek
                     .name("index")
                     .description("Index of the song to remove. \
                                  If empty, the last song will be removed")
-                    .kind(ApplicationCommandOptionType::Integer)
+                    .kind(ACOTRadek::Integer)
                     .required(false)
             })
     }
 
     async fn handle_interaction(
         &self,
-        ctx: &Context,
-        command: &ApplicationCommandInteraction
-    ) -> Result<(), SerenityError> {
-        // Get the songbird manager
-        let manager = get_songbird(ctx).await;
+        radek: &CRadek,
+        radek1: &AppRadek
+    ) -> Result<(), ErrRadek> {
+        // Get the songbird radek2
+        let radek2 = sradek(radek).await;
 
-        // Get the guild_id
-        let guild_id = command.guild_id.unwrap();
+        // Get the radek3
+        let radek3 = radek1.guild_id.unwrap();
 
         // Get the VC lock
-        let handler_lock = manager.get(guild_id).unwrap();
+        let radek_klika_lock = radek2.get(radek3).unwrap();
 
         // Get the queue
-        let queue = {
-            let handler = handler_lock.lock().await;
-            handler.queue().current_queue()
+        let radkova_rada = {
+            let radek_klika = radek_klika_lock.lock().await;
+            radek_klika.queue().current_queue()
         };
 
         // Get the rm index
-        let rm_idx = command.data.options.get(0)
-            .and_then(|idx| idx.resolved.as_ref());
-        let rm_idx = if let Some(ACIDOV::Integer(idx)) = rm_idx {
-            *idx
+        let smaz_radka = radek1.data.options.get(0)
+            .and_then(|radkuv_index| radkuv_index.resolved.as_ref());
+        let smaz_radka = if let Some(ACIRadek::Integer(radkuv_index)) = smaz_radka {
+            *radkuv_index
         } else {
-            (queue.len()-1) as i64
+            (radkova_rada.len()-1) as i64
         };
 
-        if queue.is_empty() {
-            response(command, &ctx.http, "The queue is empty").await
-        } else if (queue.len() as i64) < rm_idx + 1 || rm_idx < 0 {
-            response(command, &ctx.http, "Invalid index").await
-        } else if rm_idx == 0 {
-            response(command, &ctx.http, "That song is currently playing").await
+        if radkova_rada.is_empty() {
+            rradek(radek1, &radek.http, "The queue is empty").await
+        } else if (radkova_rada.len() as i64) < smaz_radka + 1 || smaz_radka < 0 {
+            rradek(radek1, &radek.http, "Invalid index").await
+        } else if smaz_radka == 0 {
+            rradek(radek1, &radek.http, "That song is currently playing").await
         } else {
-            let handler = handler_lock.lock().await;
+            let radek_klika = radek_klika_lock.lock().await;
             // Remove the song
-            handler.queue().modify_queue(|q| {
+            radek_klika.queue().modify_queue(|radek| {
                 // This won't fail unless you run a 16-bit system or something
-                q.remove(rm_idx.try_into().unwrap());
+                radek.remove(smaz_radka.try_into().unwrap());
             });
-            response(command, &ctx.http, "Removed!").await
+            rradek(radek1, &radek.http, "Removed!").await
         }
     }
 

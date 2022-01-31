@@ -3,17 +3,17 @@ use crate::{
     commands::*,
 };
 use serenity::{
-    prelude::SerenityError,
+    prelude::SerenityError as ErrRadek,
     async_trait,
-    client::Context,
-    model::prelude::application_command::ApplicationCommandInteraction,
+    client::Context as CRadek,
+    model::prelude::application_command::ApplicationCommandInteraction as AppRadek,
 };
 
 /// Skips the currently playing song
-pub struct Skip;
+pub struct SkipRadek;
 
 #[async_trait]
-impl ApplicationCommandImplementation for Skip {
+impl RadekHahaha for SkipRadek {
     fn alias(&self) -> String {
         "skip".to_string()
     }
@@ -24,25 +24,25 @@ impl ApplicationCommandImplementation for Skip {
 
     async fn handle_interaction(
         &self,
-        ctx: &Context,
-        command: &ApplicationCommandInteraction
-    ) -> Result<(), SerenityError> {
-        // Get the songbird manager
-        let manager = get_songbird(ctx).await;
+        radek: &CRadek,
+        radek1: &AppRadek
+    ) -> Result<(), ErrRadek> {
+        // Get the songbird radek2
+        let radek2 = sradek(radek).await;
 
-        // Get the guild_id
-        let guild_id = command.guild_id.unwrap();
+        // Get the radek3
+        let radek3 = radek1.guild_id.unwrap();
 
         // Get the lock
-        let handler_lock = manager.get(guild_id).unwrap();
+        let radek_lock = radek2.get(radek3).unwrap();
 
         // Skip the song
-        if let Err(e) = { let r=handler_lock.lock().await.queue().skip(); r } {
+        if let Err(e) = { let r=radek_lock.lock().await.queue().skip(); r } {
             eprintln!("Error while trying to skip: {:?}", e);
-            response(command, &ctx.http,
+            rradek(radek1, &radek.http,
                      "An error has occurred while trying to skip").await
         } else {
-            response(command, &ctx.http, "Skipped.").await
+            rradek(radek1, &radek.http, "Skipped.").await
         }
     }
 }

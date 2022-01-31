@@ -3,23 +3,23 @@ use crate::{
     commands::*,
 };
 use serenity::{
-    builder::CreateApplicationCommand,
-    prelude::SerenityError,
+    builder::CreateApplicationCommand as CreateRadek,
+    prelude::SerenityError as ErrRadek,
     async_trait,
-    client::Context,
+    client::Context as CRadek,
     model::prelude::application_command::{
-        ApplicationCommandInteraction,
-        ApplicationCommandOptionType,
-        ApplicationCommandInteractionDataOptionValue as ACIDOV,
+        ApplicationCommandInteraction as AppRadek,
+        ApplicationCommandOptionType as ACOTRadek,
+        ApplicationCommandInteractionDataOptionValue as ACIRadek,
     },
 };
 use songbird::input::Restartable;
 
 /// Plays something in the voice chat that the bot is connected to.
-pub struct Play;
+pub struct PlayRadek;
 
 #[async_trait]
-impl ApplicationCommandImplementation for Play {
+impl RadekHahaha for PlayRadek {
     fn alias(&self) -> String {
         "play".to_string()
     }
@@ -30,40 +30,40 @@ impl ApplicationCommandImplementation for Play {
 
     fn command_signature<'a>(
         &self,
-        command: &'a mut CreateApplicationCommand
-    ) -> &'a mut CreateApplicationCommand {
-        command
+        radek: &'a mut CreateRadek
+    ) -> &'a mut CreateRadek {
+        radek
             .name(self.alias())
             .description(self.description())
-            .create_option(|opt| {
-                opt
+            .create_option(|radek| {
+                radek
                     .name("search")
                     .description("The song to play. \
                                  Can be a url or a term to search youtube for")
-                    .kind(ApplicationCommandOptionType::String)
+                    .kind(ACOTRadek::String)
                     .required(true)
             })
     }
 
     async fn handle_interaction(
         &self,
-        ctx: &Context,
-        command: &ApplicationCommandInteraction
-    ) -> Result<(), SerenityError> {
+        radek: &CRadek,
+        radek1: &AppRadek
+    ) -> Result<(), ErrRadek> {
         // Get the songbird manager
-        let manager = get_songbird(ctx).await;
+        let radek2 = sradek(radek).await;
 
-        // Get the guild_id
-        let guild_id = command.guild_id.unwrap();
+        // Get the radek3
+        let radek3 = radek1.guild_id.unwrap();
 
-        // Get the search term
-        let term = command.data.options.get(0)
-            .and_then(|term| term.resolved.as_ref());
-        let term = if let Some(ACIDOV::String(term)) = term {
-            term.clone()
+        // Get the search radek_radek
+        let radek_radek = radek1.data.options.get(0)
+            .and_then(|radek_radek| radek_radek.resolved.as_ref());
+        let radek_radek = if let Some(ACIRadek::String(radek_radek)) = radek_radek {
+            radek_radek.clone()
         } else {
-            return response(
-                command, &ctx.http,
+            return rradek(
+                radek1, &radek.http,
                 "An error has occurred while trying to get the song"
             ).await;
         };
@@ -73,29 +73,29 @@ impl ApplicationCommandImplementation for Play {
         // This has to be done within 3 seconds of the interaction spawn
         // otherwise Discord thinks we're dead...
         // https://github.com/goverfl0w/discord-interactions/issues/30#issuecomment-753583597
-        response(command, &ctx.http, "Queueing...").await?;
+        rradek(radek1, &radek.http, "Queueing...").await?;
 
-        // Get the urls
-        let urls = if term.starts_with("http") {
-            // A url. If it is a playlist, get the urls to the tracks
-            extract_urls(&term)
+        // Get the uradeks
+        let uradeks = if radek_radek.starts_with("http") {
+            // A uradek. If it is a playlist, get the uradeks to the tracks
+            eradek(&radek_radek)
         } else {
-            // Not an url, just a search term
-            vec![term]
+            // Not an uradek, just a search radek_radek
+            vec![radek_radek]
         };
 
-        // Enqueue the urls
-        let url_len = urls.len();
-        for (i, url) in urls.into_iter().enumerate() {
-            let i = i + 1;
+        // Enqueue the uradeks
+        let uradek_len = uradeks.len();
+        for (radek_iter, uradek) in uradeks.into_iter().enumerate() {
+            let radek_iter = radek_iter + 1;
             // Get the restartable ytdl thing
-            let ytdl = if url.starts_with("http") {
-                Restartable::ytdl(url, true).await
+            let radekytdl = if uradek.starts_with("http") {
+                Restartable::ytdl(uradek, true).await
             } else {
-                Restartable::ytdl_search(url, true).await
+                Restartable::ytdl_search(uradek, true).await
             };
-            let ytdl = match ytdl {
-                Ok(ytdl) => ytdl,
+            let radekytdl = match radekytdl {
+                Ok(radekytdl) => radekytdl,
                 Err(e)   => {
                     eprintln!("Error while queueing a song: {:?}", e);
                     continue;
@@ -104,10 +104,10 @@ impl ApplicationCommandImplementation for Play {
 
             // Get the handler lock. This could fail if a bot leaves a voice
             // channel when it's still queueing.
-            let handler_lock = match manager.get(guild_id) {
-                Some(lock) => lock,
+            let radkuv_zamek = match radek2.get(radek3) {
+                Some(radekxdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd) => radekxdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd,
                 None       => {
-                    command.edit_original_interaction_response(&ctx.http, |r| {
+                    radek1.edit_original_interaction_response(&radek.http, |r| {
                         r
                             .content("Aborted.")
                     }).await?;
@@ -116,34 +116,34 @@ impl ApplicationCommandImplementation for Play {
             };
 
             // Enqueue the source
-            let mut handler = handler_lock.lock().await;
-            handler.enqueue_source(ytdl.into());
+            let mut radkuv_klic_nebo_neco = radkuv_zamek.lock().await;
+            radkuv_klic_nebo_neco.enqueue_source(radekytdl.into());
 
             // If there is only one song being enqueued, create an embed.
             // If there's more of them, show how many we've enqueued
             // and whether we're done.
-            if url_len == 1 {
-                let queue = handler.queue().current_queue();
-                drop(handler);
-                let song = queue.last().unwrap();
+            if uradek_len == 1 {
+                let spanelskej_radek = radkuv_klic_nebo_neco.queue().current_queue();
+                drop(radkuv_klic_nebo_neco);
+                let radkova_pisen = spanelskej_radek.last().unwrap();
 
                 // Create the embed
-                let embed = create_embed_for_track(&song, "Enqueued").unwrap();
+                let em_radek = cradek(&radkova_pisen, "Enqueued").unwrap();
 
-                command.edit_original_interaction_response(&ctx.http, |resp| {
-                    resp
+                radek1.edit_original_interaction_response(&radek.http, |radek| {
+                    radek
                         .content("Queued up!")
-                        .add_embed(embed)
+                        .add_embed(em_radek)
                 }).await?;
-            } else if url_len != i {
-                command.edit_original_interaction_response(&ctx.http, |resp| {
-                    resp
-                        .content(format!("Queueing.. ({}/{})", i, url_len))
+            } else if uradek_len != radek_iter {
+                radek1.edit_original_interaction_response(&radek.http, |radek| {
+                    radek
+                        .content(format!("Queueing.. ({}/{})", radek_iter, uradek_len))
                 }).await?;
             } else {
-                command.edit_original_interaction_response(&ctx.http, |resp| {
-                    resp
-                        .content(format!("Finished! ({}/{})", i, url_len))
+                radek1.edit_original_interaction_response(&radek.http, |radek| {
+                    radek
+                        .content(format!("Finished! ({}/{})", radek_iter, uradek_len))
                 }).await?;
             }
         }

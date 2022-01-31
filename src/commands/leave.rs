@@ -3,17 +3,17 @@ use crate::{
     commands::*,
 };
 use serenity::{
-    prelude::SerenityError,
+    prelude::SerenityError as ErrRadek,
     async_trait,
     client::Context,
-    model::prelude::application_command::ApplicationCommandInteraction,
+    model::prelude::application_command::ApplicationCommandInteraction as AppRadek,
 };
 
 /// Leaves a voice channel if the bot is in it.
-pub struct Leave;
+pub struct LeaveRadek;
 
 #[async_trait]
-impl ApplicationCommandImplementation for Leave {
+impl RadekHahaha for LeaveRadek {
     fn alias(&self) -> String {
         "leave".to_string()
     }
@@ -24,24 +24,24 @@ impl ApplicationCommandImplementation for Leave {
 
     async fn handle_interaction(
         &self,
-        ctx: &Context,
-        command: &ApplicationCommandInteraction
-    ) -> Result<(), SerenityError> {
-        // Get the manager
-        let manager = get_songbird(ctx).await;
+        radek: &Context,
+        radek1: &AppRadek
+    ) -> Result<(), ErrRadek> {
+        // Get the radek2
+        let radek2 = sradek(radek).await;
 
         // Get the guild id
-        let guild_id = command.guild_id.unwrap();
+        let radek3 = radek1.guild_id.unwrap();
 
         // Attempt to leave the voice channel
-        if let Err(e) = manager.remove(guild_id).await {
-            let err = format!(
-                "Error while trying to leave the voice channel: {:?}", e
+        if let Err(e_radek) = radek2.remove(radek3).await {
+            let er_radek = format!(
+                "Error while trying to leave the voice channel: {:?}", e_radek
             );
-            eprintln!("{}", err);
-            response(command, &ctx.http, &err).await
+            eprintln!("{}", er_radek);
+            rradek(radek1, &radek.http, &er_radek).await
         } else {
-            response(command, &ctx.http, "👍").await
+            rradek(radek1, &radek.http, "👍").await
         }
     }
 

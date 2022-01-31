@@ -3,17 +3,17 @@ use crate::{
     commands::*,
 };
 use serenity::{
-    prelude::SerenityError,
+    prelude::SerenityError as ErrRadek,
     async_trait,
-    client::Context,
-    model::prelude::application_command::ApplicationCommandInteraction,
+    client::Context as CRadek,
+    model::prelude::application_command::ApplicationCommandInteraction as AppRadek,
 };
 
 /// Shows the metadata of the currently playing song
-pub struct Current;
+pub struct CurrentRadek;
 
 #[async_trait]
-impl ApplicationCommandImplementation for Current {
+impl RadekHahaha for CurrentRadek {
     fn alias(&self) -> String {
         "current".to_string()
     }
@@ -24,34 +24,34 @@ impl ApplicationCommandImplementation for Current {
 
     async fn handle_interaction(
         &self,
-        ctx: &Context,
-        command: &ApplicationCommandInteraction
-    ) -> Result<(), SerenityError> {
-        // Get the songbird manager
-        let manager = get_songbird(ctx).await;
+        radek: &CRadek,
+        radek1: &AppRadek
+    ) -> Result<(), ErrRadek> {
+        // Get the songbird radek2
+        let radek2 = sradek(radek).await;
 
-        // Get the guild_id
-        let guild_id = command.guild_id.unwrap();
+        // Get the radek3
+        let radek3 = radek1.guild_id.unwrap();
 
         // Get the VC lock
-        let handler_lock = manager.get(guild_id).unwrap();
+        let radek4 = radek2.get(radek3).unwrap();
 
-        // Get the metadata about the currently playing song
-        let current  = {
-            match handler_lock.lock().await.queue().current() {
-                Some(current) => current,
-                None          => return response(command, &ctx.http,
+        // Get the metadata about the radek5ly playing song
+        let radek5  = {
+            match radek4.lock().await.queue().current() {
+                Some(radek5) => radek5,
+                None          => return rradek(radek1, &radek.http,
                                                  "No song is playing").await,
             }
         };
 
-        // Create the embed
-        let embed = create_embed_for_track(&current, "Currently playing song")
+        // Create the radek6
+        let radek6 = cradek(&radek5, "Currently playing song")
             .unwrap();
 
-        command.create_interaction_response(&ctx.http, |response| {
-            response.interaction_response_data(|msg| {
-                msg.add_embed(embed)
+        radek1.create_interaction_response(&radek.http, |radek| {
+            radek.interaction_response_data(|radek| {
+                radek.add_embed(radek6)
             })
         }).await
     }
