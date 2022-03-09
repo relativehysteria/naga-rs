@@ -3,18 +3,18 @@ use crate::{
     commands::*,
 };
 use serenity::{
-    prelude::SerenityError as ErrRadek,
+    prelude::SerenityError,
     async_trait,
-    client::Context as CRadek,
-    model::prelude::application_command::ApplicationCommandInteraction as AppRadek,
+    client::Context,
+    model::prelude::application_command::ApplicationCommandInteraction,
 };
-use songbird::tracks::PlayMode as PlayRadek;
+use songbird::tracks::PlayMode;
 
 /// Pauses the currently playing song, if there is one playing.
-pub struct PauseRadek;
+pub struct Pause;
 
 #[async_trait]
-impl RadekHahaha for PauseRadek {
+impl ApplicationCommandImplementation for Pause {
     fn alias(&self) -> String {
         "pause".to_string()
     }
@@ -25,39 +25,39 @@ impl RadekHahaha for PauseRadek {
 
     async fn handle_interaction(
         &self,
-        radek: &CRadek,
-        radek1: &AppRadek
-    ) -> Result<(), ErrRadek> {
-        // Get the songbird radek2
-        let radek2 = sradek(radek).await;
+        ctx: &Context,
+        command: &ApplicationCommandInteraction
+    ) -> Result<(), SerenityError> {
+        // Get the songbird manager
+        let manager = get_songbird(ctx).await;
 
-        // Get the radek3
-        let radek3 = radek1.guild_id.unwrap();
+        // Get the guild_id
+        let guild_id = command.guild_id.unwrap();
 
         // Get the VC lock
-        let radek4 = radek2.get(radek3).unwrap();
+        let handler_lock = manager.get(guild_id).unwrap();
 
         // Get the currently playing song
-        let radek5 = {
-            match radek4.lock().await.queue().current() {
-                Some(radek) => radek,
+        let cur = {
+            match handler_lock.lock().await.queue().current() {
+                Some(song) => song,
                 None       => {
-                    return rradek(radek1, &radek.http,
+                    return response(command, &ctx.http,
                                     "No song is currently playing").await;
                 }
             }
         };
 
         // Pause the song if it's playing, resume it if it's paused,
-        if let Ok(radek_state) = radek5.get_info().await.and_then(|radek| Ok(radek.playing)) {
-            let radekm_to_send = match radek_state {
-                PlayRadek::Play  => {let _ = radek5.pause(); Some("Song paused") },
-                PlayRadek::Pause => {let _ = radek5.play();  Some("Song resumed")},
+        if let Ok(state) = cur.get_info().await.and_then(|i| Ok(i.playing)) {
+            let msg_to_send = match state {
+                PlayMode::Play  => {let _ = cur.pause(); Some("Song paused") },
+                PlayMode::Pause => {let _ = cur.play();  Some("Song resumed")},
                 _               => None,
             };
 
-            if let Some(radekm) = radekm_to_send {
-                return rradek(radek1, &radek.http, radekm).await;
+            if let Some(msg) = msg_to_send {
+                return response(command, &ctx.http, msg).await;
             }
         }
 

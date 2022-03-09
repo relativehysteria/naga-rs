@@ -4,29 +4,29 @@
 //! 1. Create a new file called `ping.rs`.
 //! 2. In there, create a new struct called `Ping`
 //! _(though it can be called anything..)_
-//! 3. Implement the `RadekHahaha` trait for the struct.
+//! 3. Implement the `ApplicationCommandImplementation` trait for the struct.
 //! 4. Add the module (`ping`) and the struct (`Ping`) to the `implement!()`
 //! macro in `mod.rs`
 use serenity::{
-    prelude::SerenityError as ErrRadek,
+    prelude::SerenityError,
     async_trait,
     client::Context,
     builder::CreateApplicationCommand,
-    model::prelude::application_command::ApplicationCommandInteraction as AppRadek,
+    model::prelude::application_command::ApplicationCommandInteraction,
 };
 
-macro_rules! vyradkuj {
+macro_rules! implement {
     ( $(($mod:ident, $function_struct:ident)),* ) => {
         $(
             mod $mod;
             pub use $mod::$function_struct;
         )*
 
-        /// Returns a `Vec` of _all_ the `RadekHahaha`s
+        /// Returns a `Vec` of _all_ the `ApplicationCommandImplementation`s
         /// this bot has.
         /// _New commands have to be registered here._
         pub fn get_bot_commands()
-        -> Vec<Box<dyn RadekHahaha + Sync + Send>> {
+        -> Vec<Box<dyn ApplicationCommandImplementation + Sync + Send>> {
             vec![
                 $(
                     Box::new($function_struct),
@@ -36,25 +36,25 @@ macro_rules! vyradkuj {
     };
 }
 
-vyradkuj!(
-    (remove, RemoveRadek),
-    (ping, PingRadek),
-    (join, JoinRadek),
-    (leave, LeaveRadek),
-    (play, PlayRadek),
-    (clear, ClearRadek),
-    (skip, SkipRadek),
-    (pause, PauseRadek),
-    (current, CurrentRadek),
-    (song_loop, SongLoopRadek),
-    (shuffle, ShuffleRadek),
-    (queue, QueueRadek)
+implement!(
+    (remove, Remove),
+    (ping, Ping),
+    (join, Join),
+    (leave, Leave),
+    (play, Play),
+    (clear, Clear),
+    (skip, Skip),
+    (pause, Pause),
+    (current, Current),
+    (song_loop, SongLoop),
+    (shuffle, Shuffle),
+    (queue, Queue)
 );
 
 /// Every command shall implement this trait so that it can be passed
 /// to the `EventHandler` in `main.rs`.
 #[async_trait]
-pub trait RadekHahaha {
+pub trait ApplicationCommandImplementation {
     /// Returns the command alias of this... command
     fn alias(&self) -> String;
 
@@ -73,9 +73,9 @@ pub trait RadekHahaha {
     /// The function that is passed to `create_global_application_command`
     fn command_signature<'a>(
         &self,
-        radek: &'a mut CreateApplicationCommand
+        command: &'a mut CreateApplicationCommand
     ) -> &'a mut CreateApplicationCommand {
-       radek
+        command
             .name(self.alias())
             .description(self.description())
     }
@@ -93,7 +93,6 @@ pub trait RadekHahaha {
     /// ```
     async fn handle_interaction(
         &self,
-        radek: &Context,
-        radek1: &AppRadek
-    ) -> Result<(), ErrRadek>;
+        ctx: &Context, cmd: &ApplicationCommandInteraction
+    ) -> Result<(), SerenityError>;
 }

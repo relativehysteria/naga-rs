@@ -3,17 +3,17 @@ use crate::{
     commands::*,
 };
 use serenity::{
-    prelude::SerenityError as ErrRadek,
+    prelude::SerenityError,
     async_trait,
-    client::Context as CRadek,
-    model::prelude::application_command::ApplicationCommandInteraction as AppRadek,
+    client::Context,
+    model::prelude::application_command::ApplicationCommandInteraction,
 };
 
 /// Clears the currently played queue.
-pub struct ClearRadek;
+pub struct Clear;
 
 #[async_trait]
-impl RadekHahaha for ClearRadek {
+impl ApplicationCommandImplementation for Clear {
     fn alias(&self) -> String {
         "clear".to_string()
     }
@@ -24,18 +24,18 @@ impl RadekHahaha for ClearRadek {
 
     async fn handle_interaction(
         &self,
-        radek: &CRadek,
-        radek1: &AppRadek
-    ) -> Result<(), ErrRadek> {
+        ctx: &Context,
+        command: &ApplicationCommandInteraction
+    ) -> Result<(), SerenityError> {
         // Get the songbird manager
-        let radek2 = sradek(radek).await;
+        let manager = get_songbird(ctx).await;
 
-        // Get the radek3
-        let radek3 = radek1.guild_id.unwrap();
+        // Get the guild_id
+        let guild_id = command.guild_id.unwrap();
 
         // Clear the queue
-        let radek4 = radek2.get(radek3).unwrap();
-        { radek4.lock().await.queue().stop(); }
-        rradek(radek1, &radek.http, "Queue cleared").await
+        let handler_lock = manager.get(guild_id).unwrap();
+        { handler_lock.lock().await.queue().stop(); }
+        response(command, &ctx.http, "Queue cleared").await
     }
 }

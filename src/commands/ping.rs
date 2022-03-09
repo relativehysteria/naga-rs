@@ -4,19 +4,19 @@ use crate::{
     commands::*,
 };
 use serenity::{
-    prelude::SerenityError as ErrRadek,
+    prelude::SerenityError,
     async_trait,
-    client::Context as CRadek,
-    model::prelude::application_command::ApplicationCommandInteraction as AppRadek,
+    client::Context,
+    model::prelude::application_command::ApplicationCommandInteraction,
 };
 
 /// A very simple ping command.
 /// The source code of this command can be used as a template for other
 /// commands.
-pub struct PingRadek;
+pub struct Ping;
 
 #[async_trait]
-impl RadekHahaha for PingRadek {
+impl ApplicationCommandImplementation for Ping {
     fn alias(&self) -> String {
         "ping".to_string()
     }
@@ -31,10 +31,10 @@ impl RadekHahaha for PingRadek {
 
     async fn handle_interaction(
         &self,
-        radek: &CRadek,
-        radek1: &AppRadek
-    ) -> Result<(), ErrRadek> {
-        rradek(radek1, &radek.http, "Pong").await
+        ctx: &Context,
+        command: &ApplicationCommandInteraction
+    ) -> Result<(), SerenityError> {
+        response(command, &ctx.http, "Pong").await
     }
 
 }

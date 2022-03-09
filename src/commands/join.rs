@@ -3,19 +3,19 @@ use crate::{
     commands::*,
 };
 use serenity::{
-    prelude::SerenityError as ErrRadek,
+    prelude::SerenityError,
     async_trait,
-    client::Context as CRadek,
+    client::Context,
     model::prelude::{
-        application_command::ApplicationCommandInteraction as AppRadek,
+        application_command::ApplicationCommandInteraction,
     }
 };
 
 /// Joins the bot into a voice channel.
-pub struct JoinRadek;
+pub struct Join;
 
 #[async_trait]
-impl RadekHahaha for JoinRadek {
+impl ApplicationCommandImplementation for Join {
     fn alias(&self) -> String {
         "join".to_string()
     }
@@ -30,45 +30,45 @@ impl RadekHahaha for JoinRadek {
 
     async fn handle_interaction(
         &self,
-        radek: &CRadek,
-        radek1: &AppRadek
-    ) -> Result<(), ErrRadek> {
-        // Get the songbird radek3
-        let radek3 = sradek(radek).await;
+        ctx: &Context,
+        command: &ApplicationCommandInteraction
+    ) -> Result<(), SerenityError> {
+        // Get the songbird manager
+        let manager = get_songbird(ctx).await;
 
         // Get the guild id
-        let radek4 = radek1.guild_id.unwrap();
+        let guild_id = command.guild_id.unwrap();
 
         // Get the guild
-        let radek5 = match radek.cache.guild(radek4).await {
-            Some(radek5) => radek5,
+        let guild = match ctx.cache.guild(guild_id).await {
+            Some(guild) => guild,
             None        => return Ok(()),
         };
 
         // Get the voice channel id
-        let radek6 = match radek5.voice_states
-            .get(&radek1.user.id)
-            .and_then(|radek| radek.channel_id)
+        let voice_channel_id = match guild.voice_states
+            .get(&command.user.id)
+            .and_then(|voice| voice.channel_id)
         {
-            Some(radek) => radek,
-            None        => return rradek(radek1, &radek.http,
+            Some(vc_id) => vc_id,
+            None        => return response(command, &ctx.http,
                                            "Not in a voice channel").await,
         };
 
         // Bots shouldn't reconnect between channels
-        if radek3.get(radek4).is_some() {
-            return rradek(radek1, &radek.http,
+        if manager.get(guild_id).is_some() {
+            return response(command, &ctx.http,
                             "Already connected to a voice channel").await;
         }
 
         // Join the VC
-        let (_, radek_stat) = radek3.join(radek4, radek6).await;
-        if let Err(e) = radek_stat {
-            let e_radek = format!("e_radekor while joining a voice channel: {:?}", e);
-            eprintln!("{}", e_radek);
-            rradek(radek1, &radek.http, &e_radek).await
+        let (_, status) = manager.join(guild_id, voice_channel_id).await;
+        if let Err(e) = status {
+            let err = format!("Error while joining a voice channel: {:?}", e);
+            eprintln!("{}", err);
+            response(command, &ctx.http, &err).await
         } else {
-            rradek(radek1, &radek.http, "I'm in B)").await
+            response(command, &ctx.http, "I'm in B)").await
         }
     }
 }

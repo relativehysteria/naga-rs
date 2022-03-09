@@ -4,56 +4,56 @@ use crate::{
     commands::*,
 };
 use serenity::{
-    prelude::SerenityError as ErrRadek,
+    prelude::SerenityError,
     async_trait,
-    client::Context as CRadek,
+    client::Context,
     builder::{
-        CreateEmbed as CreateRadek,
-        CreateButton as CreateAnotherRadek,
+        CreateEmbed,
+        CreateButton,
     },
     futures::StreamExt,
     model::{
-        prelude::application_command::ApplicationCommandInteraction as AppRadek,
-        interactions::message_component::ButtonStyle as RadkuvStyl,
+        prelude::application_command::ApplicationCommandInteraction,
+        interactions::message_component::ButtonStyle,
     },
 };
 use songbird::{
-    tracks::TrackHandle as RadekKlika,
-    input::Metadata as RadkuvDenik,
+    tracks::TrackHandle,
+    input::Metadata,
 };
 
 /// Shows the currently enqueued songs. 5 songs per page.
-pub struct QueueRadek;
+pub struct Queue;
 
-impl QueueRadek {
-    fn button(radek: &str, radek_id: &str, postizenej_radek: bool) -> CreateAnotherRadek {
-        let mut radkuv_zadek = CreateAnotherRadek(HashMap::new());
-        let radkuv_zadek = radkuv_zadek
-            .style(RadkuvStyl::Primary)
-            .label(radek)
-            .custom_id(radek_id);
-        if postizenej_radek {
-            radkuv_zadek.disabled(true).clone()
+impl Queue {
+    fn button(label: &str, id: &str, disabled: bool) -> CreateButton {
+        let mut button = CreateButton(HashMap::new());
+        let button = button
+            .style(ButtonStyle::Primary)
+            .label(label)
+            .custom_id(id);
+        if disabled {
+            button.disabled(true).clone()
         } else {
-            radkuv_zadek.clone()
+            button.clone()
         }
     }
-    fn prvni_radek(&self, radek: usize) -> CreateAnotherRadek {
-        QueueRadek::button("<<", "first", radek == 1)
+    fn first_button(&self, page: usize) -> CreateButton {
+        Queue::button("<<", "first", page == 1)
     }
-    fn druhy_radek(&self, radek: usize) -> CreateAnotherRadek {
-        QueueRadek::button("<", "prev", radek == 1)
+    fn prev_button(&self, page: usize) -> CreateButton {
+        Queue::button("<", "prev", page == 1)
     }
-    fn treti_radek(&self, max_radek: usize) -> CreateAnotherRadek {
-        QueueRadek::button(">", "next", max_radek == 1)
+    fn next_button(&self, max_page: usize) -> CreateButton {
+        Queue::button(">", "next", max_page == 1)
     }
-    fn ctvrty_radek(&self, max_radek: usize) -> CreateAnotherRadek {
-        QueueRadek::button(">>", "last", max_radek == 1)
+    fn last_button(&self, max_page: usize) -> CreateButton {
+        Queue::button(">>", "last", max_page == 1)
     }
 }
 
 #[async_trait]
-impl RadekHahaha for QueueRadek {
+impl ApplicationCommandImplementation for Queue {
     fn alias(&self) -> String {
         "queue".to_string()
     }
@@ -64,92 +64,92 @@ impl RadekHahaha for QueueRadek {
 
     async fn handle_interaction(
         &self,
-        radek: &CRadek,
-        radek1: &AppRadek
-    ) -> Result<(), ErrRadek> {
+        ctx: &Context,
+        command: &ApplicationCommandInteraction
+    ) -> Result<(), SerenityError> {
         // Send a response within 3 seconds
-        let _ = rradek(radek1, &radek.http, "Fetching the queue...").await;
+        let _ = response(command, &ctx.http, "Fetching the queue...").await;
 
-        // Get the songbird radek2
-        let radek2 = sradek(radek).await;
+        // Get the songbird manager
+        let manager = get_songbird(ctx).await;
 
-        // Get the radek3
-        let radek3 = radek1.guild_id.unwrap();
+        // Get the guild_id
+        let guild_id = command.guild_id.unwrap();
 
         // Get the current queue
-        let radkuv_zamek = radek2.get(radek3).unwrap();
-        let radkova_rada = {
-            radkuv_zamek.lock().await.queue().current_queue()
+        let handler_lock = manager.get(guild_id).unwrap();
+        let queue = {
+            handler_lock.lock().await.queue().current_queue()
         };
 
         // If the queue is empty, return
-        if radkova_rada.is_empty() {
-            radek1.edit_original_interaction_response(&radek.http, |resp| {
+        if queue.is_empty() {
+            command.edit_original_interaction_response(&ctx.http, |resp| {
                 resp.content("Queue is empty!")
             }).await?;
             return Ok(());
         }
 
         // Data needed for the queue page to work
-        let radek_sifra      = 5;  // Tracks per page
-        let radkovo_vyrazeni = std::time::Duration::from_secs(60);
-        let mut radkova_stranka = 1;
-        let max_radkova_stranka = (radkova_rada.len() as f32 / radek_sifra as f32).ceil() as usize;
+        let tpp      = 5;  // Tracks per page
+        let timeout  = std::time::Duration::from_secs(60);
+        let mut page = 1;
+        let max_page = (queue.len() as f32 / tpp as f32).ceil() as usize;
 
-        // Create the first radkova_stranka.
-        // If the first radkova_stranka can't be created, just return.
-        let mut radkuv_embed = match vytvor_embed_pro_radkovu_radu(&radkova_rada, radek_sifra, radkova_stranka) {
-            Some(radkuv_embed) => radkuv_embed,
+        // Create the first page.
+        // If the first page can't be created, just return.
+        let mut embed = match create_queue_embed(&queue, tpp, page) {
+            Some(embed) => embed,
             None        => return Ok(()),
         };
-        radek1.edit_original_interaction_response(&radek.http, |r| {
+        command.edit_original_interaction_response(&ctx.http, |r| {
             r
                 .content("")
-                .add_embed(radkuv_embed)
+                .add_embed(embed)
                 .components(|comps| {
                     comps.create_action_row(|row| {
                         row
-                            .add_button(self.prvni_radek(radkova_stranka))
-                            .add_button(self.druhy_radek(radkova_stranka))
-                            .add_button(self.treti_radek(max_radkova_stranka))
-                            .add_button(self.ctvrty_radek(max_radkova_stranka))
+                            .add_button(self.first_button(page))
+                            .add_button(self.prev_button(page))
+                            .add_button(self.next_button(max_page))
+                            .add_button(self.last_button(max_page))
                     })
                 })
         }).await?;
 
         // Create a stream for the button interactions
-        let mut radek_je_uz_docela_unavenej_z_tohodle = radek1
-            .get_interaction_response(&radek.http).await?
-            .await_component_interactions(&radek.shard)
-            .timeout(radkovo_vyrazeni)
+        let mut interaction_stream = command
+            .get_interaction_response(&ctx.http).await?
+            .await_component_interactions(&ctx.shard)
+            .timeout(timeout)
             .await;
 
         // Capture interactions
-        while let Some(radeeeeek) = radek_je_uz_docela_unavenej_z_tohodle.next().await {
-            match radeeeeek.data.custom_id.as_str() {
-                "first" => radkova_stranka = 1,
-                "prev"  => radkova_stranka = usize::max(radkova_stranka - 1, 1),
-                "next"  => radkova_stranka = usize::min(radkova_stranka + 1, max_radkova_stranka),
-                "last"  => radkova_stranka = max_radkova_stranka,
+        while let Some(interaction) = interaction_stream.next().await {
+            match interaction.data.custom_id.as_str() {
+                "first" => page = 1,
+                "prev"  => page = usize::max(page - 1, 1),
+                "next"  => page = usize::min(page + 1, max_page),
+                "last"  => page = max_page,
                 ______  => unreachable!(),
             }
 
-            radkuv_embed = match vytvor_embed_pro_radkovu_radu(&radkova_rada, radek_sifra, radkova_stranka) {
-                Some(radkuv_embed) => radkuv_embed,
+            embed = match create_queue_embed(&queue, tpp, page) {
+                Some(embed) => embed,
                 None        => continue,
             };
-            let _ = rradek(radek1, &radek.http, "").await;
-            let _ = radek1.edit_original_interaction_response(&radek.http, |r_jako_radek| {
-                r_jako_radek
+            let _ = response(command, &ctx.http, "").await;
+            let _ = command.edit_original_interaction_response(&ctx.http, |r| {
+                r
                     .content("")
-                    .add_embed(radkuv_embed)
+                    .add_embed(embed)
                     .components(|comps| {
                         comps.create_action_row(|row| {
                             row
-                                .add_button(self.prvni_radek(radkova_stranka))
-                                .add_button(self.druhy_radek(radkova_stranka))
-                                .add_button(self.treti_radek(max_radkova_stranka))
-                                .add_button(self.ctvrty_radek(max_radkova_stranka))
+                                .add_button(self.first_button(page))
+                                .add_button(self.prev_button(page))
+                                .add_button(self.next_button(max_page))
+                                .add_button(self.last_button(max_page))
                         })
                     })
             }).await;
@@ -163,58 +163,58 @@ impl RadekHahaha for QueueRadek {
 /// This function _does_ check whether the `page` can be created at all.
 /// In the case it can't, it returns `None`. Tracks with no title will be shown,
 /// but with no title..
-fn vytvor_embed_pro_radkovu_radu(
-    radek: &[RadekKlika],
-    radku_za_stranku: usize,
-    radkova_stranka: usize
-) -> Option<CreateRadek> {
-    // Get the `radkova_stranka` bounds
-    let min_radkova_stranka = 1;
-    let max_radkova_stranka = (radek.len() as f32 / radku_za_stranku as f32).ceil() as usize;
+fn create_queue_embed(
+    queue: &[TrackHandle],
+    tracks_per_page: usize,
+    page: usize
+) -> Option<CreateEmbed> {
+    // Get the `page` bounds
+    let min_page = 1;
+    let max_page = (queue.len() as f32 / tracks_per_page as f32).ceil() as usize;
 
-    // Check the `radkova_stranka` bounds
-    if radkova_stranka < min_radkova_stranka || radkova_stranka > max_radkova_stranka || max_radkova_stranka == 0 {
+    // Check the `page` bounds
+    if page < min_page || page > max_page || max_page == 0 {
         return None;
     }
 
-    // Get the slice range for the `Vec<RadekKlika>` radkova_stranka.
+    // Get the slice range for the `Vec<TrackHandle>` page.
     // `+ 1` in here because we skip the first (current) song.
-    let min_radkova_pisnicka = (radkova_stranka * radku_za_stranku) - radku_za_stranku + 1;
-    let max_radkova_pisnicka = usize::min(min_radkova_pisnicka + radku_za_stranku, radek.len());
+    let min_track = (page * tracks_per_page) - tracks_per_page + 1;
+    let max_track = usize::min(min_track + tracks_per_page, queue.len());
 
-    // Get the lines to show in the radek radkova_stranka
-    let radkova_pisnicka_lines = &radek[min_radkova_pisnicka..max_radkova_pisnicka].iter()
-        .zip(min_radkova_pisnicka..max_radkova_pisnicka)
+    // Get the lines to show in the queue page
+    let track_lines = &queue[min_track..max_track].iter()
+        .zip(min_track..max_track)
         .map(|(tr, i)| format!("`{}` {}\n", i, get_queue_line(tr.metadata())))
         .collect::<String>();
 
-    let mut radkuv_embed = CreateRadek(HashMap::new());
-    radkuv_embed.field("Current", get_queue_line(radek[0].metadata()), false);
-    if radkova_pisnicka_lines != "" {
-        radkuv_embed.field("Next up", radkova_pisnicka_lines, false);
+    let mut embed = CreateEmbed(HashMap::new());
+    embed.field("Current", get_queue_line(queue[0].metadata()), false);
+    if track_lines != "" {
+        embed.field("Next up", track_lines, false);
     }
-    Some(radkuv_embed)
+    Some(embed)
 }
 
-/// Creates and returns a single line in the `radek()` radkova_stranka
-fn get_queue_line(radkovy_osobni_data: &RadkuvDenik) -> String {
-    let radkuv_zdroj   = &radkovy_osobni_data.source_url;
-    let jak_dlouho_to_radek_vydrzi = &radkovy_osobni_data.duration;
-    let radkuv_nazev    = &radkovy_osobni_data.title;
+/// Creates and returns a single line in the `queue()` page
+fn get_queue_line(metadata: &Metadata) -> String {
+    let source   = &metadata.source_url;
+    let duration = &metadata.duration;
+    let title    = &metadata.title;
 
-    let mut radkuv_vysledek = "".to_string();
+    let mut ret_str = "".to_string();
 
-    if let Some(dur) = jak_dlouho_to_radek_vydrzi {
-        radkuv_vysledek.push_str(&format!("`{}` ", pradek(*dur)));
+    if let Some(dur) = duration {
+        ret_str.push_str(&format!("`{}` ", parse_duration(*dur)));
     }
 
-    if let Some(radkuv_nazev) = radkuv_nazev {
-        if let Some(radkuv_zdroj) = radkuv_zdroj {
-            radkuv_vysledek.push_str(&format!("[{}]({})", radkuv_nazev, radkuv_zdroj));
+    if let Some(title) = title {
+        if let Some(source) = source {
+            ret_str.push_str(&format!("[{}]({})", title, source));
         } else {
-            radkuv_vysledek.push_str(&radkuv_nazev);
+            ret_str.push_str(&title);
         }
     }
 
-    radkuv_vysledek
+    ret_str
 }
