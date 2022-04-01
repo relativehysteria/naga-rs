@@ -41,17 +41,17 @@ impl Queue {
             button.clone()
         }
     }
-    fn first_button(&self, page: usize) -> CreateButton {
-        Queue::button("<<", "first", page == 1)
+    fn first_button(&self, disabled: bool) -> CreateButton {
+        Queue::button("<<", "first", disabled)
     }
-    fn prev_button(&self, page: usize) -> CreateButton {
-        Queue::button("<", "prev", page == 1)
+    fn prev_button(&self, disabled: bool) -> CreateButton {
+        Queue::button("<", "prev", disabled)
     }
-    fn next_button(&self, max_page: usize) -> CreateButton {
-        Queue::button(">", "next", max_page == 1)
+    fn next_button(&self, disabled: bool) -> CreateButton {
+        Queue::button(">", "next", disabled)
     }
-    fn last_button(&self, max_page: usize) -> CreateButton {
-        Queue::button(">>", "last", max_page == 1)
+    fn last_button(&self, disabled: bool) -> CreateButton {
+        Queue::button(">>", "last", disabled)
     }
 }
 
@@ -97,7 +97,7 @@ impl ApplicationCommandImplementation for Queue {
         let tpp      = 5;  // Tracks per page
         let timeout  = std::time::Duration::from_secs(60);
         let mut page = 1;
-        let max_page = (queue.len() as f32 / tpp as f32).ceil() as usize;
+        let max_page = get_max_page_bound(queue.len(), tpp);
 
         // Create the first page.
         // If the first page can't be created, just return.
@@ -112,10 +112,10 @@ impl ApplicationCommandImplementation for Queue {
                 .components(|comps| {
                     comps.create_action_row(|row| {
                         row
-                            .add_button(self.first_button(page))
-                            .add_button(self.prev_button(page))
-                            .add_button(self.next_button(max_page))
-                            .add_button(self.last_button(max_page))
+                            .add_button(self.first_button(page == 1))
+                            .add_button(self.prev_button(page == 1))
+                            .add_button(self.next_button(page == max_page))
+                            .add_button(self.last_button(page == max_page))
                     })
                 })
         }).await?;
@@ -158,10 +158,10 @@ impl ApplicationCommandImplementation for Queue {
                     .components(|comps| {
                         comps.create_action_row(|row| {
                             row
-                                .add_button(self.first_button(page))
-                                .add_button(self.prev_button(page))
-                                .add_button(self.next_button(max_page))
-                                .add_button(self.last_button(max_page))
+                                .add_button(self.first_button(page == 1))
+                                .add_button(self.prev_button(page == 1))
+                                .add_button(self.next_button(page == max_page))
+                                .add_button(self.last_button(page == max_page))
                         })
                     })
             }).await;
@@ -182,7 +182,7 @@ fn create_queue_embed(
 ) -> Option<CreateEmbed> {
     // Get the `page` bounds
     let min_page = 1;
-    let max_page = (queue.len() as f32 / tracks_per_page as f32).ceil() as usize;
+    let max_page = get_max_page_bound(queue.len(), tracks_per_page);
 
     // Check the `page` bounds
     if page < min_page || page > max_page || max_page == 0 {
@@ -206,6 +206,11 @@ fn create_queue_embed(
         embed.field("Next up", track_lines, false);
     }
     Some(embed)
+}
+
+/// Returns the maximum page that can be shown in the queue embed.
+fn get_max_page_bound(qlen: usize, tracks_per_page: usize) -> usize {
+    ((qlen - 1) as f32 / tracks_per_page as f32).ceil() as usize
 }
 
 /// Creates and returns a single line in the `queue()` page
