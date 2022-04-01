@@ -14,7 +14,10 @@ use serenity::{
     futures::StreamExt,
     model::{
         prelude::application_command::ApplicationCommandInteraction,
-        interactions::message_component::ButtonStyle,
+        interactions::{
+            message_component::ButtonStyle,
+            InteractionResponseType,
+        },
     },
 };
 use songbird::{
@@ -134,11 +137,20 @@ impl ApplicationCommandImplementation for Queue {
                 ______  => unreachable!(),
             }
 
+            // Acknowledge the interaction before we create an embed so that
+            // we don't receive an 'interaction has failed' message
+            let _ = interaction.create_interaction_response(&ctx.http, |r| {
+                r
+                    .kind(InteractionResponseType::DeferredUpdateMessage)
+            }).await;
+
+            // Create the embed
             embed = match create_queue_embed(&queue, tpp, page) {
                 Some(embed) => embed,
                 None        => continue,
             };
-            let _ = response(command, &ctx.http, "").await;
+
+            // Edit the original embed
             let _ = command.edit_original_interaction_response(&ctx.http, |r| {
                 r
                     .content("")
