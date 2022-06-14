@@ -1,3 +1,5 @@
 /target
 APPLICATION_ID
 TOKEN
+tags
+*log
