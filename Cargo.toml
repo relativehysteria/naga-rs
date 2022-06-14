@@ -6,10 +6,6 @@ edition = "2021"
 [dependencies]
 rand = "0.8"
 
-[dependencies.songbird]
-version = "0.2"
-features = ["builtin-queue"]
-
 [dependencies.serenity]
 version = "0.10"
 features = ["cache", "voice", "rustls_backend", "unstable_discord_api", "collector"]
