@@ -1,4 +1,4 @@
-use serenity::Client;
+use serenity::prelude::*;
 use std::fs::read_to_string;
 
 #[tokio::main]
@@ -15,8 +15,11 @@ async fn main() {
         .parse::<u64>()
         .expect("Couldn't parse APPLICATION_ID as u64");
 
+    // Prepare the intents
+    let intents = GatewayIntents::empty();
+
     // Build the client
-    let mut client = Client::builder(&token)
+    let mut client = Client::builder(token, intents)
         .application_id(app_id)
         .await
         .expect("Couldn't build the client");
