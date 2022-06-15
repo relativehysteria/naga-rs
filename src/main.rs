@@ -1,10 +1,13 @@
 use tracing::{ Level, error };
 use serenity::prelude::*;
 use std::fs::read_to_string;
-use naga_rs::slash_handler;
+use naga_rs::SlashHandler;
 
 /// Minimum log level of output messages
-const LOG_LEVEL: tracing::Level = Level::DEBUG;
+#[cfg(debug_assertions)]
+pub const LOG_LEVEL: tracing::Level = Level::DEBUG;
+#[cfg(not(debug_assertions))]
+pub const LOG_LEVEL: tracing::Level = Level::INFO;
 
 #[tokio::main]
 async fn main() {
@@ -46,7 +49,7 @@ async fn create_discord_client() -> Client {
     // Build the client
     Client::builder(token, intents)
         .application_id(app_id)
-        .event_handler(slash_handler::Handler)
+        .event_handler(SlashHandler::new())
         .await
         .expect("Couldn't build the client")
 }

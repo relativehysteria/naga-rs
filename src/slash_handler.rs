@@ -1,19 +1,34 @@
-use tracing::{ debug, error };
+//! Serenity command handler for ApplicationCommands (slash commands)
+use tracing::{ warn, debug, error, info };
 use serenity::client::{ EventHandler, Context };
 use serenity::model::interactions::Interaction;
 use serenity::model::interactions::application_command::ApplicationCommand;
 use serenity::model::gateway::Ready;
 use serenity::async_trait;
+use crate::commands::{ get_bot_commands, ApplicationCommandImplementation };
 
 /// Handler for slash commands
-pub struct Handler;
+pub struct Handler {
+    /// Commands registered to this handler
+    commands: Vec<Box<dyn ApplicationCommandImplementation + Sync + Send>>,
+}
+
+impl Handler {
+    /// Builds the handler and registers all the commands returned by
+    /// `get_bot_commands` as global commands
+    pub fn new() -> Self {
+        // We're not actually registering anything yet, but it is done
+        // later on whenever the bot is `ready()`
+        Self { commands: get_bot_commands(), }
+    }
+}
 
 #[async_trait]
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         // Only interact with application commands
         debug!("Got interaction: {interaction:?}");
-        let interaction = match interaction {
+        let slash_cmd = match interaction {
             Interaction::ApplicationCommand(int) => int,
             _ => {
                 debug!("Unhandled interaction.");
@@ -21,17 +36,34 @@ impl EventHandler for Handler {
             },
         };
 
-        if &interaction.data.name == "join" {
-            let r = interaction.create_interaction_response(&ctx.http, |resp| {
-                resp.interaction_response_data(|msg| {
-                    msg.content("Yay!")
-                })
-            })
-            .await;
+        // Get the command struct corresponding to the interaction
+        let name = &slash_cmd.data.name;
+        let command = match self.commands.iter().find(|x| &x.alias() == name) {
+            Some(cmd) => cmd,
+            None => {
+                warn!("Global slash command doesn't exist: '{name}'. \
+                      Perhaps it is registered but not globally?.");
+                return
+            },
+        };
 
-            if r.is_err() {
-                error!("Interaction failed: {r:?}");
-            }
+        // All commands have to be used from inside a guild
+        match slash_cmd.guild_id {
+            Some(id) => id,
+            None => { debug!("Not in a guild."); return },
+        };
+
+        // Some commands require the user to be in a voice channel.
+        if command.requires_voice_chat() {
+            // TODO: IMPLEMENT THIS!
+            debug!("Not in a voice channel.");
+            return;
+        }
+
+        // Handle the interaction
+        let result = command.handle_interaction(&ctx, &slash_cmd).await;
+        if let Err(e) = result {
+            error!("While handling a slash command: {e:?}");
         }
     }
 
@@ -52,19 +84,17 @@ impl EventHandler for Handler {
                 .unwrap();
         }
 
-        // TODO: Now create our commands and register them
-        let result = ApplicationCommand::create_global_application_command(
-            &ctx.http, |cmd| {
-                let cmd = cmd
-                    .name("join")
-                    .description("join your voice channel");
-                debug!("Creating command: {cmd:?}");
-                cmd
-            }
-        ).await;
+        // Now create our commands and register them
+        for (idx, cmd) in self.commands.iter().enumerate() {
+            info!("Registering command {:02}/{:02}: {}",
+                  idx+1, self.commands.len(), cmd.alias());
 
-        if let Err(e) = result {
-            error!("Command creation failed: {e:?}");
+            let result = ApplicationCommand::create_global_application_command(
+                &ctx.http, |app_cmd| { cmd.command_signature(app_cmd) }
+            ).await;
+            if let Err(e) = result {
+                error!("Command creation failed: {e:?}");
+            }
         }
     }
 }
