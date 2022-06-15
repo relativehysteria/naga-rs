@@ -1,7 +1,7 @@
 use tracing::{ Level, error };
 use serenity::prelude::*;
 use std::fs::read_to_string;
-use naga_rs::SlashHandler;
+use naga_rs::{ SlashHandler, VoiceManager };
 
 /// Minimum log level of output messages
 #[cfg(debug_assertions)]
@@ -50,6 +50,7 @@ async fn create_discord_client() -> Client {
     Client::builder(token, intents)
         .application_id(app_id)
         .event_handler(SlashHandler::new())
+        .voice_manager(VoiceManager::new())
         .await
         .expect("Couldn't build the client")
 }

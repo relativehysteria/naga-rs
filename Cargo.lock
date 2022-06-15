@@ -529,7 +529,7 @@ dependencies = [
 name = "naga-rs"
 version = "1.0.0"
 dependencies = [
- "rand",
+ "futures-channel",
  "serenity",
  "tokio",
  "tracing",
